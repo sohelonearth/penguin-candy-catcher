@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Penguin Candy Catcher — Happy Children's Day, Saaanu Jii! 🐧🍬</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka for playful rounded headers, Nunito for clean legibility -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Core reset & touch ergonomics */
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #1b1736 0%, #3a2b5c 42%, #7d5285 78%, #f2a6b8 100%);
+            touch-action: none;
+        }
+
+        h1, h2, h3, .font-cute {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        /* Bouncy penguin & floating animations */
+        @keyframes penguinBounce {
+            0%, 100% { transform: translateY(0px) rotate(-3deg) scale(1, 1); }
+            25% { transform: translateY(-10px) rotate(2deg) scale(0.97, 1.04); }
+            50% { transform: translateY(0px) rotate(3deg) scale(1.04, 0.96); }
+            75% { transform: translateY(-7px) rotate(-2deg) scale(0.98, 1.03); }
+        }
+
+        @keyframes driftCandy {
+            0%, 100% { transform: translateY(0px) rotate(-8deg) scale(1); }
+            50% { transform: translateY(-14px) rotate(10deg) scale(1.08); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.65), 0 0 0 0 rgba(244, 114, 182, 0.45);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 14px 30px -4px rgba(244, 114, 182, 0.85), 0 0 0 9px rgba(244, 114, 182, 0);
+            }
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.82) translateY(20px); }
+            70% { opacity: 1; transform: scale(1.03) translateY(-3px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes stampBounce {
+            0% { opacity: 0; transform: scale(2.3) rotate(-18deg); }
+            60% { opacity: 1; transform: scale(0.92) rotate(-6deg); }
+            80% { transform: scale(1.04) rotate(-8deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-7deg); }
+        }
+
+        @keyframes iconUnlockPop {
+            0% { transform: scale(0.7); }
+            55% { transform: scale(1.38) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .animate-penguin-bounce {
+            animation: penguinBounce 2.6s ease-in-out infinite;
+        }
+
+        .animate-candy-drift {
+            animation: driftCandy 3.6s ease-in-out infinite;
+        }
+
+        .animate-btn-glow {
+            animation: pulseGlow 2.2s infinite ease-in-out;
+        }
+
+        .animate-pop-in {
+            animation: popIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .animate-stamp {
+            animation: stampBounce 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .treat-unlocked {
+            filter: none !important;
+            opacity: 1 !important;
+            animation: iconUnlockPop 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Glassmorphic pastel card */
+        .pastel-glass {
+            background: rgba(255, 250, 253, 0.93);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 50px rgba(26, 16, 51, 0.45);
+        }
+
+        /* Dashed golden ticket styling */
+        .voucher-ticket {
+            background: linear-gradient(135deg, #fff8e7 0%, #ffeef5 100%);
+            border: 2.5px dashed #f59e0b;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="relative w-full h-full flex items-center justify-center">
+
+    <!-- Main Full-Screen Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top Score HUD & Treat Collection (Hidden until game starts) -->
+    <div id="hud" class="hidden fixed top-0 left-0 right-0 z-20 px-3 pt-3 pb-1 pointer-events-none flex flex-col items-center">
+        <!-- Main Progress Pill -->
+        <div class="w-full max-w-md bg-white/22 backdrop-blur-md border border-white/40 rounded-full px-3.5 py-2 shadow-lg flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-lg">🐧</span>
+                <span class="font-cute text-white font-semibold text-xs sm:text-sm tracking-wide drop-shadow">
+                    Saaanu's Treats
+                </span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="flex-1 h-3.5 bg-indigo-950/45 rounded-full overflow-hidden p-0.5 border border-white/25">
+                <div id="progressBar"
+                     class="h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-400 to-amber-300 transition-all duration-300 ease-out"
+                     style="width: 0%;">
+                </div>
+            </div>
+
+            <!-- Numeric Counter -->
+            <div class="shrink-0 bg-white/95 text-pink-600 font-cute font-bold text-xs sm:text-sm px-2.5 py-0.5 rounded-full shadow-sm">
+                <span id="scoreText">0</span> / 12 🍬
+            </div>
+        </div>
+
+        <!-- Treat Collection Row (Lights up in full color as each treat type is caught) -->
+        <div id="collectionBar" class="mt-1.5 bg-indigo-950/35 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm">
+            <span data-treat="🍫" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍫</span>
+            <span data-treat="🍭" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍭</span>
+            <span data-treat="🍦" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍦</span>
+            <span data-treat="🧁" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🧁</span>
+            <span data-treat="🍬" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍬</span>
+            <span data-treat="🍩" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍩</span>
+            <span data-treat="🍪" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍪</span>
+            <span data-treat="🍓" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍓</span>
+        </div>
+
+        <!-- Dynamic Status Pills (Sweet Combo & Magnet Heart Timer) -->
+        <div class="mt-1.5 flex flex-wrap items-center justify-center gap-2">
+            <div id="comboPill" class="hidden bg-gradient-to-r from-amber-400 to-pink-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50 animate-bounce">
+                ✨ Sweet Combo! x<span id="comboCountText">3</span>
+            </div>
+            <div id="magnetPill" class="hidden bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50">
+                Magnet! 💗 <span id="magnetTimerText">5.0</span>s
+            </div>
+        </div>
+
+        <p id="hintText" class="text-white/90 text-xs sm:text-sm mt-1.5 font-semibold tracking-wide drop-shadow transition-opacity duration-500">
+            Slide Penguin left or right to catch treats! ✨
+        </p>
+    </div>
+
+    <!-- 1. Landing Overlay -->
+    <div id="startOverlay" class="fixed inset-0 z-30 flex items-center justify-center p-4 bg-indigo-950/30 backdrop-blur-xs overflow-hidden">
+        <!-- Floating Candy Emojis Drifting Around the Card -->
+        <div class="pointer-events-none select-none">
+            <span class="absolute top-[9%] left-[10%] text-3xl sm:text-4xl animate-candy-drift" style="animation-delay: 0s;">🍬</span>
+            <span class="absolute top-[12%] right-[11%] text-3xl sm:text-4xl animate-candy-drift" style="animation-delay: 0.7s;">🍭</span>
+            <span class="absolute top-[42%] left-[5%] text-2xl sm:text-3xl animate-candy-drift" style="animation-delay: 1.4s;">🍩</span>
+            <span class="absolute top-[46%] right-[6%] text-2xl sm:text-3xl animate-candy-drift" style="animation-delay: 2.1s;">🍓</span>
+            <span class="absolute bottom-[11%] left-[12%] text-3xl sm:text-4xl animate-candy-drift" style="animation-delay: 0.9s;">🧁</span>
+            <span class="absolute bottom-[10%] right-[13%] text-3xl sm:text-4xl animate-candy-drift" style="animation-delay: 1.8s;">🍫</span>
+            <span class="absolute top-[24%] left-[22%] text-xl sm:text-2xl animate-candy-drift" style="animation-delay: 1.1s;">💖</span>
+            <span class="absolute bottom-[24%] right-[20%] text-xl sm:text-2xl animate-candy-drift" style="animation-delay: 2.4s;">⭐</span>
+        </div>
+
+        <div class="pastel-glass w-full max-w-sm sm:max-w-md rounded-3xl p-6 sm:p-8 text-center animate-pop-in relative z-10">
+            <!-- Bigger, Bouncier Plump Penguin Avatar with Party Hat & Side Bow -->
+            <div class="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-3 rounded-full bg-gradient-to-b from-pink-100 via-rose-50 to-purple-100 border-4 border-white shadow-lg flex items-center justify-center animate-penguin-bounce">
+                <svg viewBox="0 0 140 140" class="w-24 h-24 sm:w-28 sm:h-28 overflow-visible">
+                    <!-- Feet -->
+                    <ellipse cx="52" cy="122" rx="12" ry="6.5" fill="#ffb703"/>
+                    <ellipse cx="88" cy="122" rx="12" ry="6.5" fill="#ffb703"/>
+                    <!-- Flippers -->
+                    <ellipse cx="26" cy="82" rx="11" ry="22" transform="rotate(24 26 82)" fill="#252e45"/>
+                    <ellipse cx="114" cy="82" rx="11" ry="22" transform="rotate(-24 114 82)" fill="#252e45"/>
+                    <!-- Plump Round Body -->
+                    <ellipse cx="70" cy="80" rx="44" ry="44" fill="#252e45"/>
+                    <!-- Chubby White Belly -->
+                    <ellipse cx="70" cy="85" rx="31" ry="34" fill="#ffffff"/>
+                    <!-- Tiny Children's Day Party Hat on Top -->
+                    <polygon points="56,39 84,39 70,11" fill="#ff7096"/>
+                    <line x1="61" y1="29" x2="79" y2="29" stroke="#fde047" stroke-width="3.5" stroke-linecap="round"/>
+                    <line x1="65" y1="20" x2="75" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                    <!-- Pom-pom on top of Party Hat -->
+                    <circle cx="70" cy="10" r="6" fill="#fde047"/>
+                    <!-- Smaller Cute Pink Bow on the Side -->
+                    <g transform="translate(97, 47) rotate(24)">
+                        <polygon points="0,0 -9,-6 -9,6" fill="#ff477e"/>
+                        <polygon points="0,0 9,-6 9,6" fill="#ff477e"/>
+                        <circle cx="0" cy="0" r="3.2" fill="#ffb3c6"/>
+                    </g>
+                    <!-- Big Sparkly Eyes -->
+                    <circle cx="54" cy="62" r="6.5" fill="#1b2133"/>
+                    <circle cx="86" cy="62" r="6.5" fill="#1b2133"/>
+                    <circle cx="56.2" cy="59.5" r="2.5" fill="#ffffff"/>
+                    <circle cx="88.2" cy="59.5" r="2.5" fill="#ffffff"/>
+                    <circle cx="52.5" cy="64" r="1.2" fill="#ffffff"/>
+                    <circle cx="84.5" cy="64" r="1.2" fill="#ffffff"/>
+                    <!-- Big Rosy Blush Cheeks -->
+                    <ellipse cx="43" cy="71" rx="8" ry="4.8" fill="#ff7597" opacity="0.85"/>
+                    <ellipse cx="97" cy="71" rx="8" ry="4.8" fill="#ff7597" opacity="0.85"/>
+                    <!-- Cute Little Beak -->
+                    <polygon points="62,68 78,68 70,78" fill="#ffb703"/>
+                </svg>
+            </div>
+
+            <div class="inline-block bg-pink-100 text-pink-600 font-bold text-xs uppercase tracking-wider px-3.5 py-1 rounded-full mb-2">
+                ✨ November 14 Special ✨
+            </div>
+
+            <h1 class="font-cute text-2xl sm:text-3xl font-bold text-slate-800 leading-tight mb-3">
+                Happy Children's Day,<br>
+                <span class="inline-block mt-0.5 text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500">
+                    Saaanu Jii! 🐧🍬
+                </span>
+            </h1>
+
+            <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6 px-1">
+                Help little <span class="font-bold text-pink-600">Penguin</span> catch <span class="font-bold text-pink-600">12 sweet treats</span> to unlock your special Children's Day surprise!
+            </p>
+
+            <button id="startBtn"
+                    class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-lg sm:text-xl tracking-wide shadow-lg active:scale-95 transition-transform animate-btn-glow cursor-pointer">
+                Start Catching ✨
+            </button>
+
+            <p class="text-xs text-slate-400 mt-4 font-semibold">
+                🔊 Soft chimes included • Drag or move to waddle
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. Surprise Finale Modal (Unlocks at 12 points; continuous confetti & hearts render behind on canvas) -->
+    <div id="winModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-indigo-950/35 backdrop-blur-xs overflow-y-auto">
+        <div class="pastel-glass w-full max-w-md rounded-3xl p-5 sm:p-7 text-center relative my-auto animate-pop-in">
+            <!-- Top Badge -->
+            <div class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-200 to-pink-200 text-rose-700 font-cute font-bold text-xs sm:text-sm px-4 py-1.5 rounded-full shadow-xs mb-3">
+                <span>🎉</span> 12/12 Sweet Treats Caught! <span>🎉</span>
+            </div>
+
+            <!-- Sweet Children's Day Letter (Exact wording preserved) -->
+            <h2 class="font-cute text-xl sm:text-2xl font-bold text-slate-800 mb-2">
+                My Favorite Kid, Saniya <span class="whitespace-nowrap">(Penguin 🐧)</span>
+            </h2>
+
+            <div class="bg-white/85 rounded-2xl p-4 border border-pink-100 shadow-inner mb-4">
+                <p class="text-slate-700 text-sm sm:text-base leading-relaxed font-semibold">
+                    "Happy Children's Day, <span class="text-pink-600 font-bold">Saaanu Jii</span>! Never lose your cute, playful, childish spark—taking care of you and making you smile is my favorite thing in the world."
+                </p>
+            </div>
+
+            <!-- Interactive Children's Day VIP Treat Voucher (Exact wording preserved) -->
+            <div id="voucherBox" class="voucher-ticket rounded-2xl p-4 mb-4 text-center transition-all duration-300 shadow-sm">
+                <div class="flex items-center justify-center gap-1.5 text-amber-600 font-cute font-bold text-xs uppercase tracking-wider mb-1">
+                    <span>👑</span> Children's Day VIP Treat Voucher <span>👑</span>
+                </div>
+                <p class="text-slate-700 font-bold text-sm sm:text-base mb-3">
+                    1x Late-Night Ice Cream &amp; Chocolate Feast + Unlimited Pampering 🍦🍫
+                </p>
+
+                <!-- Claim Button (Shown before claiming) -->
+                <button id="claimBtn"
+                        class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 text-white font-cute font-bold text-base shadow-md hover:brightness-105 active:scale-95 transition-all cursor-pointer">
+                    Claim Treat 🎟️
+                </button>
+
+                <!-- Redeemed Stamped Badge (Revealed on tap) -->
+                <div id="redeemedBadge" class="hidden mt-1">
+                    <div class="inline-block border-2 border-emerald-600 bg-emerald-50/95 text-emerald-700 rounded-xl px-3.5 py-2 shadow-sm animate-stamp">
+                        <p class="font-cute font-bold text-xs sm:text-sm tracking-wide uppercase">
+                            ✅ REDEEMED: 1x Late-Night Ice Cream &amp; Chocolate Feast + Unlimited Pampering — Valid Anytime!
+                        </p>
+                    </div>
+                    <p id="screenshotNote" class="text-xs sm:text-sm font-bold text-rose-600 mt-2.5">
+                        Screenshot this and send it to Suhail ji 😉
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sign-off (Exact wording preserved) -->
+            <p class="font-cute text-lg sm:text-xl font-bold text-rose-600 mb-4">
+                Forever yours, Your Suhail ji ❤️
+            </p>
+
+            <!-- Subtle Play Again Button -->
+            <button id="playAgainBtn"
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-xs sm:text-sm transition-colors cursor-pointer">
+                Play Again 🔄
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Penguin Candy Catcher — Redesigned Cozy Children's Day Mini-Game
+         * Starring Saniya ("Penguin 🐧" / "Saaanu Jii")
+         */
+
+        // ==========================================
+        // 1. WEB AUDIO API SYNTHESIZER (Soft & Cute)
+        // ==========================================
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, startTimeOffset = 0, volume = 0.13, slideToFreq = null) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime + startTimeOffset;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+                if (slideToFreq) {
+                    osc.frequency.exponentialRampToValueAtTime(slideToFreq, now + duration);
+                }
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.exponentialRampToValueAtTime(volume, now + 0.018);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.02);
+            }
+
+            // Distinct soft chime per treat type
+            playTreatCatch(treat) {
+                this.init();
+                if (treat.type === 'rainbow') {
+                    // Magical twinkling arpeggio for Rare Rainbow Star (+3)
+                    this.playTone(587.33, 'sine', 0.22, 0.00, 0.14);
+                    this.playTone(739.99, 'sine', 0.24, 0.05, 0.14);
+                    this.playTone(880.00, 'triangle', 0.30, 0.10, 0.15);
+                    this.playTone(1174.66, 'sine', 0.42, 0.15, 0.13);
+                    this.playTone(1479.98, 'sine', 0.48, 0.20, 0.10);
+                    return;
+                }
+
+                if (treat.type === 'magnet') {
+                    // Warm magnetic shimmer for Magnet Heart
+                    this.playTone(440.00, 'sine', 0.28, 0.00, 0.14, 659.25);
+                    this.playTone(659.25, 'triangle', 0.35, 0.09, 0.14, 880.00);
+                    return;
+                }
+
+                // Each regular treat gets its own cozy musical pitch
+                const baseFreq = treat.pitch || 523.25;
+                this.playTone(baseFreq, 'sine', 0.16, 0.00, 0.13);
+                this.playTone(baseFreq * 1.5, 'triangle', 0.22, 0.045, 0.11);
+            }
+
+            // Rising arpeggio chime on 3+ Sweet Combo
+            playCombo() {
+                this.init();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                notes.forEach((freq, idx) => {
+                    this.playTone(freq, 'sine', 0.24, idx * 0.055, 0.13);
+                });
+            }
+
+            // Tiny celebratory jingle at milestones (4 and 8 treats)
+            playMilestone() {
+                this.init();
+                const jingle = [
+                    { f: 587.33, t: 0.00, d: 0.18 },
+                    { f: 739.99, t: 0.10, d: 0.18 },
+                    { f: 880.00, t: 0.20, d: 0.22 },
+                    { f: 1174.66, t: 0.32, d: 0.40 }
+                ];
+                jingle.forEach(n => this.playTone(n.f, 'triangle', n.d, n.t, 0.14));
+            }
+
+            // Soft bubbly "plop" when a treat touches the ground hill
+            playPlop() {
+                this.init();
+                this.playTone(260, 'sine', 0.14, 0.00, 0.09, 145);
+            }
+
+            // Celebratory music-box melody on reaching 12 points
+            playWinMelody() {
+                this.init();
+                const notes = [
+                    { f: 523.25, t: 0.00, d: 0.25 },
+                    { f: 659.25, t: 0.12, d: 0.25 },
+                    { f: 783.99, t: 0.24, d: 0.25 },
+                    { f: 1046.50, t: 0.36, d: 0.45 },
+                    { f: 880.00, t: 0.56, d: 0.25 },
+                    { f: 1046.50, t: 0.72, d: 0.70 }
+                ];
+                notes.forEach(n => this.playTone(n.f, 'triangle', n.d, n.t, 0.16));
+            }
+
+            // Stamp/voucher claim sound
+            playClaim() {
+                this.init();
+                this.playTone(440, 'sine', 0.14, 0.00, 0.16);
+                this.playTone(659.25, 'sine', 0.18, 0.07, 0.16);
+                this.playTone(880, 'triangle', 0.35, 0.14, 0.18);
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // ==========================================
+        // 2. CANVAS & GAME STATE SETUP
+        // ==========================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements (All existing IDs preserved)
+        const startOverlay = document.getElementById('startOverlay');
+        const startBtn = document.getElementById('startBtn');
+        const hud = document.getElementById('hud');
+        const progressBar = document.getElementById('progressBar');
+        const scoreText = document.getElementById('scoreText');
+        const hintText = document.getElementById('hintText');
+        const comboPill = document.getElementById('comboPill');
+        const comboCountText = document.getElementById('comboCountText');
+        const magnetPill = document.getElementById('magnetPill');
+        const magnetTimerText = document.getElementById('magnetTimerText');
+        const winModal = document.getElementById('winModal');
+        const claimBtn = document.getElementById('claimBtn');
+        const redeemedBadge = document.getElementById('redeemedBadge');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+
+        const TARGET_SCORE = 12;
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        let gameState = 'START'; // 'START', 'PLAYING', 'WON'
+        let score = 0;
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let worldTime = 0;
+
+        // Combo, Milestone, & Magnet Power-up states
+        let recentCatchTimestamps = [];
+        let comboDisplayTimer = 0;
+        let magnetTimer = 0;
+        let milestone4Shown = false;
+        let milestone8Shown = false;
+        let unlockedTreats = new Set();
+        let basketCandies = []; // Mini visual candies inside Penguin's basket
+
+        // Ambient & Gameplay Entities
+        let stars = [];
+        let shootingStars = [];
+        let shootingStarTimer = 2.5;
+        let floatingHearts = [];
+        let clouds = [];
+        let treats = [];
+        let sparkles = [];
+        let floatingTexts = [];
+        let confetti = [];
+
+        // 8 Regular Treats + Rare Rainbow Star (+3) + Rare Magnet Heart Power-Up
+        const TREAT_POOL = [
+            { emoji: '🍫', type: 'regular', points: 1, pitch: 493.88, glow: 'rgba(244, 114, 182, 0.45)', weight: 15 },
+            { emoji: '🍭', type: 'regular', points: 1, pitch: 523.25, glow: 'rgba(251, 113, 133, 0.45)', weight: 15 },
+            { emoji: '🍦', type: 'regular', points: 1, pitch: 554.37, glow: 'rgba(253, 224, 71, 0.45)',  weight: 14 },
+            { emoji: '🧁', type: 'regular', points: 1, pitch: 587.33, glow: 'rgba(232, 121, 249, 0.45)', weight: 14 },
+            { emoji: '🍬', type: 'regular', points: 1, pitch: 622.25, glow: 'rgba(167, 139, 250, 0.45)', weight: 14 },
+            { emoji: '🍩', type: 'regular', points: 1, pitch: 659.25, glow: 'rgba(251, 191, 36, 0.45)',  weight: 14 },
+            { emoji: '🍪', type: 'regular', points: 1, pitch: 698.46, glow: 'rgba(253, 186, 116, 0.45)', weight: 14 },
+            { emoji: '🍓', type: 'regular', points: 1, pitch: 739.99, glow: 'rgba(251, 113, 133, 0.50)', weight: 14 },
+            { emoji: '⭐', type: 'rainbow', points: 3, pitch: 880.00, glow: 'rgba(253, 224, 71, 0.78)',  weight: 5  },
+            { emoji: '💗', type: 'magnet',  points: 1, pitch: 783.99, glow: 'rgba(244, 63, 94, 0.72)',   weight: 6  }
+        ];
+
+        const PLAYFUL_WORDS = ['Yummy!', 'Sweet!', 'Nom nom!', 'Penguin power!'];
+
+        // Plump, Expressive Hero Penguin (Saniya!)
+        const penguin = {
+            x: width / 2,
+            targetX: width / 2,
+            y: height - 96,
+            width: 102,
+            height: 108,
+            idleHopPhase: 0,
+            waddlePhase: 0,
+            moveSpeedRatio: 0,
+            catchSquash: 0,    // Juicy squash & stretch on catch
+            happyTimer: 0,     // Closed happy eyes smile timer
+            excitedTimer: 0,   // Open excited mouth timer on combo/rainbow
+            poutTimer: 0,      // Cute quick pout when a treat is missed
+            tilt: 0
+        };
+
+        // Keyboard input state
+        const keys = { left: false, right: false };
+
+        // Helper for cross-browser rounded rectangles on Canvas
+        function drawRoundedRect(context, x, y, w, h, r) {
+            const radius = Math.min(r, w / 2, h / 2);
+            context.beginPath();
+            context.moveTo(x + radius, y);
+            context.lineTo(x + w - radius, y);
+            context.quadraticCurveTo(x + w, y, x + w, y + radius);
+            context.lineTo(x + w, y + h - radius);
+            context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+            context.lineTo(x + radius, y + h);
+            context.quadraticCurveTo(x, y + h, x, y + h - radius);
+            context.lineTo(x, y + radius);
+            context.quadraticCurveTo(x, y, x + radius, y);
+            context.closePath();
+        }
+
+        // ==========================================
+        // 3. RESPONSIVE RESIZING & AMBIENT SCENE
+        // ==========================================
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Bigger, plumper responsive penguin sizing
+            const scaleFactor = Math.max(0.88, Math.min(1.18, width / 400));
+            penguin.width = 102 * scaleFactor;
+            penguin.height = 108 * scaleFactor;
+            penguin.y = height - Math.max(88, height * 0.13);
+            penguin.x = Math.max(penguin.width * 0.56, Math.min(width - penguin.width * 0.56, penguin.x));
+            penguin.targetX = penguin.x;
+
+            initAmbientScene();
+        }
+
+        function initAmbientScene() {
+            // Twinkling stars
+            const starCount = Math.floor((width * height) / 8500);
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * (height * 0.78),
+                    radius: Math.random() * 2.1 + 0.8,
+                    twinkleSpeed: Math.random() * 2.5 + 1.2,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Soft pastel drifting clouds
+            clouds = [];
+            const cloudCount = Math.max(4, Math.floor(width / 160));
+            for (let i = 0; i < cloudCount; i++) {
+                clouds.push({
+                    x: Math.random() * width,
+                    y: height * (0.14 + Math.random() * 0.52),
+                    scale: 0.65 + Math.random() * 0.65,
+                    speed: (Math.random() * 12 + 8) * (Math.random() < 0.5 ? 1 : -1),
+                    opacity: 0.14 + Math.random() * 0.13
+                });
+            }
+
+            // Tiny hearts drifting slowly up from the bottom
+            floatingHearts = [];
+            const heartCount = Math.max(10, Math.floor(width / 42));
+            for (let i = 0; i < heartCount; i++) {
+                floatingHearts.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: 10 + Math.random() * 9,
+                    vy: 18 + Math.random() * 22,
+                    swayPhase: Math.random() * Math.PI * 2,
+                    swaySpeed: 1.2 + Math.random() * 1.4,
+                    alpha: 0.22 + Math.random() * 0.32
+                });
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ==========================================
+        // 4. INPUT CONTROLS (Touch, Mouse, Keyboard)
+        // ==========================================
+        function updateTargetFromClientX(clientX) {
+            if (gameState !== 'PLAYING') return;
+            const margin = penguin.width * 0.54;
+            penguin.targetX = Math.max(margin, Math.min(width - margin, clientX));
+        }
+
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                updateTargetFromClientX(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                updateTargetFromClientX(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        window.addEventListener('mousemove', (e) => {
+            updateTargetFromClientX(e.clientX);
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        // ==========================================
+        // 5. GAME FLOW, COLLECTION & UI HANDLERS
+        // ==========================================
+        function resetCollectionUI() {
+            unlockedTreats.clear();
+            basketCandies = [];
+            document.querySelectorAll('.treat-badge').forEach(el => {
+                el.classList.remove('treat-unlocked');
+                el.classList.add('grayscale', 'opacity-40');
+            });
+        }
+
+        function unlockTreatInCollection(emoji) {
+            if (unlockedTreats.has(emoji)) return;
+            const badge = document.querySelector(`.treat-badge[data-treat="${emoji}"]`);
+            if (badge) {
+                unlockedTreats.add(emoji);
+                badge.classList.remove('grayscale', 'opacity-40');
+                badge.classList.add('treat-unlocked');
+            }
+        }
+
+        function startGame() {
+            sfx.init();
+            sfx.playTreatCatch(TREAT_POOL[0]);
+
+            score = 0;
+            treats = [];
+            sparkles = [];
+            floatingTexts = [];
+            confetti = [];
+            recentCatchTimestamps = [];
+            comboDisplayTimer = 0;
+            magnetTimer = 0;
+            milestone4Shown = false;
+            milestone8Shown = false;
+            spawnTimer = 0.25;
+
+            penguin.poutTimer = 0;
+            penguin.happyTimer = 0;
+            penguin.excitedTimer = 0;
+            penguin.catchSquash = 0;
+
+            resetCollectionUI();
+            updateHUD();
+
+            comboPill.classList.add('hidden');
+            magnetPill.classList.add('hidden');
+            startOverlay.classList.add('hidden');
+            winModal.classList.add('hidden');
+            hud.classList.remove('hidden');
+            hintText.style.opacity = '1';
+
+            // Reset voucher state in case of replay
+            claimBtn.classList.remove('hidden');
+            redeemedBadge.classList.add('hidden');
+
+            gameState = 'PLAYING';
+
+            setTimeout(() => {
+                if (gameState === 'PLAYING') {
+                    hintText.style.opacity = '0';
+                }
+            }, 4200);
+        }
+
+        function triggerWin() {
+            gameState = 'WON';
+            magnetTimer = 0;
+            magnetPill.classList.add('hidden');
+            comboPill.classList.add('hidden');
+
+            sfx.playWinMelody();
+            spawnCelebrationBurst(85);
+
+            setTimeout(() => {
+                hud.classList.add('hidden');
+                winModal.classList.remove('hidden');
+            }, 520);
+        }
+
+        function updateHUD() {
+            const clamped = Math.min(score, TARGET_SCORE);
+            scoreText.textContent = clamped;
+            const pct = (clamped / TARGET_SCORE) * 100;
+            progressBar.style.width = `${pct}%`;
+        }
+
+        startBtn.addEventListener('click', startGame);
+        playAgainBtn.addEventListener('click', startGame);
+
+        claimBtn.addEventListener('click', () => {
+            sfx.playClaim();
+            claimBtn.classList.add('hidden');
+            redeemedBadge.classList.remove('hidden');
+            spawnCelebrationBurst(60);
+        });
+
+        // ==========================================
+        // 6. SPAWNING & PARTICLE EFFECTS
+        // ==========================================
+        function spawnTreat() {
+            const totalWeight = TREAT_POOL.reduce((sum, t) => sum + t.weight, 0);
+            let r = Math.random() * totalWeight;
+            let selected = TREAT_POOL[0];
+            for (const item of TREAT_POOL) {
+                if (r < item.weight) {
+                    selected = item;
+                    break;
+                }
+                r -= item.weight;
+            }
+
+            // Gentle speed ramp as score rises (still cozy and zero-stress)
+            const rampFactor = 1 + (score / TARGET_SCORE) * 0.24;
+            const margin = 44;
+            const x = margin + Math.random() * (width - margin * 2);
+            const baseSpeed = Math.max(175, height * 0.25) * rampFactor;
+
+            treats.push({
+                x,
+                y: -40,
+                emoji: selected.emoji,
+                type: selected.type,
+                points: selected.points,
+                pitch: selected.pitch,
+                glow: selected.glow,
+                size: selected.type === 'regular' ? 36 : 42,
+                vy: baseSpeed + Math.random() * 65,
+                wobblePhase: Math.random() * Math.PI * 2,
+                wobbleSpeed: 2.0 + Math.random() * 1.5,
+                spinAngle: (Math.random() - 0.5) * 0.4,
+                spinSpeed: (Math.random() < 0.5 ? 1 : -1) * (1.1 + Math.random() * 1.1),
+                trailTimer: 0
+            });
+        }
+
+        function spawnShootingStar() {
+            const startX = width * (0.1 + Math.random() * 0.65);
+            const startY = height * (0.05 + Math.random() * 0.22);
+            const speed = 380 + Math.random() * 180;
+            const angle = Math.PI * (0.14 + Math.random() * 0.12);
+            shootingStars.push({
+                x: startX,
+                y: startY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                length: 75 + Math.random() * 45,
+                life: 1,
+                decay: 1.25
+            });
+        }
+
+        function spawnCatchParticles(x, y, type) {
+            const palettes = {
+                regular: ['#f9a8d4', '#fde047', '#c4b5fd', '#ffffff'],
+                rainbow: ['#fde047', '#f472b6', '#38bdf8', '#a78bfa', '#34d399', '#ffffff'],
+                magnet:  ['#fb7185', '#f43f5e', '#f9a8d4', '#ffffff']
+            };
+            const colors = palettes[type] || palettes.regular;
+            const count = type === 'regular' ? 13 : 22;
+
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+                const speed = 75 + Math.random() * 150;
+                sparkles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 45,
+                    size: Math.random() * 4.8 + 2.5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1,
+                    decay: 1.55 + Math.random() * 0.7
+                });
+            }
+        }
+
+        function spawnMissedSplash(x, y) {
+            // Soft pastel star splash where treat lands on the ground hill
+            const colors = ['#fbcfe8', '#fde68a', '#ddd6fe', '#ffffff'];
+            for (let i = 0; i < 8; i++) {
+                const angle = -Math.PI * (0.15 + Math.random() * 0.7);
+                const speed = 45 + Math.random() * 75;
+                sparkles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 3.5 + 2,
+                    color: colors[i % colors.length],
+                    life: 1,
+                    decay: 1.9
+                });
+            }
+        }
+
+        function spawnFloatingText(x, y, text, style = 'normal') {
+            floatingTexts.push({
+                x: Math.max(55, Math.min(width - 55, x)),
+                y,
+                text,
+                style, // 'normal', 'gold', 'combo', 'milestone'
+                life: 1,
+                vy: style === 'milestone' || style === 'combo' ? -52 : -68
+            });
+        }
+
+        function spawnCelebrationBurst(count = 65, originY = height * 0.38) {
+            const emojis = ['💖', '🍬', '✨', '🐧', '🎉', '🍦', '🍫', '🍩'];
+            const colors = ['#f472b6', '#fbbf24', '#a78bfa', '#34d399', '#fb7185', '#38bdf8'];
+
+            for (let i = 0; i < count; i++) {
+                const isEmoji = i % 4 === 0;
+                confetti.push({
+                    x: width * (0.1 + Math.random() * 0.8),
+                    y: originY + (Math.random() - 0.5) * 90,
+                    vx: (Math.random() - 0.5) * 320,
+                    vy: -160 - Math.random() * 240,
+                    gravity: 210 + Math.random() * 110,
+                    size: isEmoji ? 22 : (6 + Math.random() * 6),
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    emoji: isEmoji ? emojis[Math.floor(Math.random() * emojis.length)] : null,
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 7,
+                    life: 1,
+                    decay: 0.28 + Math.random() * 0.22
+                });
+            }
+        }
+
+        // ==========================================
+        // 7. UPDATE & RENDER LOOP (60 FPS)
+        // ==========================================
+        function update(dt) {
+            worldTime += dt;
+
+            // Update twinkling stars
+            for (const s of stars) {
+                s.phase += s.twinkleSpeed * dt;
+            }
+
+            // Occasional shooting stars across the sky
+            shootingStarTimer -= dt;
+            if (shootingStarTimer <= 0) {
+                spawnShootingStar();
+                shootingStarTimer = 4.5 + Math.random() * 5.5;
+            }
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const ss = shootingStars[i];
+                ss.x += ss.vx * dt;
+                ss.y += ss.vy * dt;
+                ss.life -= ss.decay * dt;
+                if (ss.life <= 0) shootingStars.splice(i, 1);
+            }
+
+            // Tiny hearts drifting slowly up from bottom of screen
+            for (const h of floatingHearts) {
+                h.y -= h.vy * dt;
+                h.swayPhase += h.swaySpeed * dt;
+                h.x += Math.sin(h.swayPhase) * 14 * dt;
+                if (h.y < -25) {
+                    h.y = height + 20;
+                    h.x = Math.random() * width;
+                }
+            }
+
+            // Update drifting pastel clouds
+            for (const c of clouds) {
+                c.x += c.speed * dt;
+                if (c.speed > 0 && c.x - 100 > width) c.x = -100;
+                if (c.speed < 0 && c.x + 100 < 0) c.x = width + 100;
+            }
+
+            // Keyboard movement
+            if (gameState === 'PLAYING') {
+                const moveSpeed = Math.max(460, width * 0.95);
+                if (keys.left) penguin.targetX -= moveSpeed * dt;
+                if (keys.right) penguin.targetX += moveSpeed * dt;
+                const margin = penguin.width * 0.54;
+                penguin.targetX = Math.max(margin, Math.min(width - margin, penguin.targetX));
+            }
+
+            // Smooth penguin follow interpolation & waddle dynamics
+            const prevX = penguin.x;
+            penguin.x += (penguin.targetX - penguin.x) * Math.min(1, dt * 18);
+            const dx = penguin.x - prevX;
+            const speed = Math.abs(dx) / Math.max(0.001, dt);
+            penguin.moveSpeedRatio = Math.min(1, speed / 340);
+
+            // Waddle phase advances faster when moving (shuffling feet + side-to-side tilt)
+            penguin.waddlePhase += dt * (3.5 + penguin.moveSpeedRatio * 14);
+            penguin.idleHopPhase += dt * 4.4;
+
+            const moveTilt = Math.max(-0.24, Math.min(0.24, dx * 0.032));
+            const waddleRoll = Math.sin(penguin.waddlePhase) * 0.09 * penguin.moveSpeedRatio;
+            penguin.tilt += ((moveTilt + waddleRoll) - penguin.tilt) * Math.min(1, dt * 14);
+
+            // Expression & squash decay
+            if (penguin.catchSquash > 0) penguin.catchSquash = Math.max(0, penguin.catchSquash - dt * 3.4);
+            if (penguin.happyTimer > 0) penguin.happyTimer = Math.max(0, penguin.happyTimer - dt);
+            if (penguin.excitedTimer > 0) penguin.excitedTimer = Math.max(0, penguin.excitedTimer - dt);
+            if (penguin.poutTimer > 0) penguin.poutTimer = Math.max(0, penguin.poutTimer - dt);
+
+            // Combo HUD pill decay
+            if (comboDisplayTimer > 0) {
+                comboDisplayTimer -= dt;
+                if (comboDisplayTimer <= 0) {
+                    comboPill.classList.add('hidden');
+                }
+            }
+
+            // Magnet Heart power-up timer
+            if (magnetTimer > 0) {
+                magnetTimer = Math.max(0, magnetTimer - dt);
+                magnetTimerText.textContent = magnetTimer.toFixed(1);
+                if (magnetTimer <= 0) {
+                    magnetPill.classList.add('hidden');
+                }
+            }
+
+            // Gameplay treat spawning & collision
+            if (gameState === 'PLAYING') {
+                spawnTimer -= dt;
+                if (spawnTimer <= 0) {
+                    spawnTreat();
+                    // Gentle spawn rate ramp as score rises (still super relaxed)
+                    const spawnRamp = 1 - (score / TARGET_SCORE) * 0.22;
+                    spawnTimer = (0.64 + Math.random() * 0.34) * spawnRamp;
+                }
+
+                const basketY = penguin.y + penguin.height * 0.10;
+                const catchRadiusX = penguin.width * 0.64;
+                const catchRadiusY = penguin.height * 0.38;
+                const groundY = height - 38;
+
+                for (let i = treats.length - 1; i >= 0; i--) {
+                    const t = treats[i];
+                    t.y += t.vy * dt;
+                    t.wobblePhase += t.wobbleSpeed * dt;
+                    t.spinAngle += t.spinSpeed * dt;
+                    t.x += Math.sin(t.wobblePhase) * 20 * dt;
+
+                    // Magnet Heart pull effect (5 seconds): nearby treats drift smoothly toward basket
+                    if (magnetTimer > 0) {
+                        const distX = penguin.x - t.x;
+                        const distY = basketY - t.y;
+                        const dist = Math.hypot(distX, distY);
+                        const magnetRadius = Math.min(width * 0.62, 260);
+                        if (dist < magnetRadius && dist > 1) {
+                            const pullStrength = (1 - dist / magnetRadius) * 440 + 180;
+                            t.x += (distX / dist) * pullStrength * dt;
+                            t.y += (distY / dist) * (pullStrength * 0.55) * dt;
+                        }
+                    }
+
+                    // Sparkle trail for rare Rainbow Star ⭐
+                    if (t.type === 'rainbow') {
+                        t.trailTimer -= dt;
+                        if (t.trailTimer <= 0) {
+                            t.trailTimer = 0.045;
+                            const rainbowCols = ['#fde047', '#f472b6', '#38bdf8', '#a78bfa', '#34d399'];
+                            sparkles.push({
+                                x: t.x + (Math.random() - 0.5) * 14,
+                                y: t.y - 6,
+                                vx: (Math.random() - 0.5) * 25,
+                                vy: -20 - Math.random() * 20,
+                                size: 3.5 + Math.random() * 2,
+                                color: rainbowCols[Math.floor(Math.random() * rainbowCols.length)],
+                                life: 0.85,
+                                decay: 1.8
+                            });
+                        }
+                    }
+
+                    // Check catch with Penguin's basket
+                    if (
+                        Math.abs(t.x - penguin.x) < catchRadiusX &&
+                        Math.abs(t.y - basketY) < catchRadiusY
+                    ) {
+                        const prevScore = score;
+                        score = Math.min(TARGET_SCORE, score + t.points);
+                        updateHUD();
+
+                        // Unlock in Treat Collection row & add mini candy to basket visual
+                        unlockTreatInCollection(t.emoji);
+                        if (basketCandies.length < 12) {
+                            basketCandies.push({
+                                emoji: t.emoji,
+                                offsetX: (Math.random() - 0.5) * 0.56,
+                                offsetY: -Math.random() * 0.06,
+                                rot: (Math.random() - 0.5) * 0.5
+                            });
+                        }
+
+                        // Juicy squash, happy face, and clear any pout
+                        penguin.catchSquash = 1;
+                        penguin.happyTimer = 0.65;
+                        penguin.poutTimer = 0;
+
+                        // Check Combo (3 treats within ~2.5 seconds)
+                        const nowSec = performance.now() / 1000;
+                        recentCatchTimestamps.push(nowSec);
+                        recentCatchTimestamps = recentCatchTimestamps.filter(ts => nowSec - ts <= 2.5);
+                        const isCombo = recentCatchTimestamps.length >= 3;
+
+                        if (t.type === 'magnet') {
+                            magnetTimer = 5.0;
+                            magnetTimerText.textContent = '5.0';
+                            magnetPill.classList.remove('hidden');
+                            penguin.excitedTimer = 0.9;
+                            sfx.playTreatCatch(t);
+                            spawnFloatingText(t.x, basketY - 46, 'Magnet! 💗', 'combo');
+                        } else if (t.type === 'rainbow') {
+                            penguin.excitedTimer = 1.0;
+                            sfx.playTreatCatch(t);
+                            spawnFloatingText(t.x, basketY - 48, 'Rainbow Star! +3 ⭐', 'gold');
+                        } else if (isCombo) {
+                            penguin.excitedTimer = 1.0;
+                            comboDisplayTimer = 2.4;
+                            comboCountText.textContent = recentCatchTimestamps.length;
+                            comboPill.classList.remove('hidden');
+                            sfx.playCombo();
+                            spawnCatchParticles(t.x, basketY - 12, 'rainbow');
+                            spawnFloatingText(t.x, basketY - 48, 'Sweet Combo! ✨', 'combo');
+                        } else {
+                            sfx.playTreatCatch(t);
+                            const randomWord = PLAYFUL_WORDS[Math.floor(Math.random() * PLAYFUL_WORDS.length)];
+                            spawnFloatingText(t.x, basketY - 30, `+${t.points} ${randomWord}`, 'normal');
+                        }
+
+                        spawnCatchParticles(t.x, basketY - 10, t.type);
+
+                        // Check Milestones at 4 ("Yummy!") and 8 ("So sweet!")
+                        if (!milestone4Shown && prevScore < 4 && score >= 4 && score < TARGET_SCORE) {
+                            milestone4Shown = true;
+                            sfx.playMilestone();
+                            spawnCelebrationBurst(32, height * 0.45);
+                            spawnFloatingText(width * 0.5, height * 0.36, 'Yummy! 🎉', 'milestone');
+                        } else if (!milestone8Shown && prevScore < 8 && score >= 8 && score < TARGET_SCORE) {
+                            milestone8Shown = true;
+                            sfx.playMilestone();
+                            spawnCelebrationBurst(36, height * 0.42);
+                            spawnFloatingText(width * 0.5, height * 0.34, 'So sweet! 💖', 'milestone');
+                        }
+
+                        treats.splice(i, 1);
+
+                        if (score >= TARGET_SCORE) {
+                            triggerWin();
+                        }
+                        continue;
+                    }
+
+                    // Missed treat reaches ground hill: soft plop + star splash + quick cute pout (NO penalty!)
+                    if (t.y >= groundY) {
+                        sfx.playPlop();
+                        spawnMissedSplash(t.x, groundY);
+                        penguin.poutTimer = 0.75;
+                        treats.splice(i, 1);
+                    }
+                }
+            }
+
+            // Update sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                const p = sparkles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 170 * dt;
+                p.life -= p.decay * dt;
+                if (p.life <= 0) sparkles.splice(i, 1);
+            }
+
+            // Update floating words
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy * dt;
+                ft.life -= (ft.style === 'milestone' ? 0.85 : 1.15) * dt;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+
+            // Gentle continuous confetti rain behind the finale modal
+            if (gameState === 'WON' && confetti.length < 48 && Math.random() < 0.35) {
+                const emojis = ['💖', '🍬', '✨', '🐧', '🍦'];
+                const colors = ['#f472b6', '#fbbf24', '#a78bfa', '#34d399', '#fb7185'];
+                const isEmoji = Math.random() < 0.28;
+                confetti.push({
+                    x: Math.random() * width,
+                    y: -20,
+                    vx: (Math.random() - 0.5) * 45,
+                    vy: 55 + Math.random() * 65,
+                    gravity: 12,
+                    size: isEmoji ? 20 : (6 + Math.random() * 5),
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    emoji: isEmoji ? emojis[Math.floor(Math.random() * emojis.length)] : null,
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 3.5,
+                    life: 1,
+                    decay: 0.08
+                });
+            }
+
+            // Update confetti particles
+            for (let i = confetti.length - 1; i >= 0; i--) {
+                const c = confetti[i];
+                c.x += c.vx * dt;
+                c.y += c.vy * dt;
+                c.vy += c.gravity * dt;
+                c.rotation += c.vRot * dt;
+                c.life -= c.decay * dt;
+                if (c.life <= 0 || c.y > height + 50) {
+                    confetti.splice(i, 1);
+                }
+            }
+        }
+
+        function drawBackground() {
+            // Dreamy twilight-to-pastel sky gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, '#191434');
+            grad.addColorStop(0.42, '#3c2d66');
+            grad.addColorStop(0.76, '#875790');
+            grad.addColorStop(1, '#f4a7b9');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Twinkling stars
+            for (const s of stars) {
+                const alpha = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(s.phase));
+                ctx.fillStyle = `rgba(255, 252, 235, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Occasional shooting stars
+            for (const ss of shootingStars) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ss.life);
+                const tailX = ss.x - (ss.vx / 450) * ss.length;
+                const tailY = ss.y - (ss.vy / 450) * ss.length;
+                const sGrad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+                sGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                sGrad.addColorStop(0.4, 'rgba(253, 224, 71, 0.55)');
+                sGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.strokeStyle = sGrad;
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(ss.x, ss.y);
+                ctx.lineTo(tailX, tailY);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ss.x, ss.y, 2.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Smiling Crescent Moon with Closed Happy Eyes in Top Corner
+            drawSmilingMoon();
+
+            // Soft floating clouds
+            for (const c of clouds) {
+                drawCloud(c.x, c.y, c.scale, c.opacity);
+            }
+
+            // Tiny hearts drifting slowly up from the bottom
+            for (const h of floatingHearts) {
+                drawMiniHeart(h.x, h.y, h.size, h.alpha);
+            }
+
+            // Candy-striped pastel ground hill at the bottom
+            drawCandyGroundHill();
+        }
+
+        function drawSmilingMoon() {
+            const moonX = width * 0.84;
+            const moonY = Math.max(92, height * 0.16);
+            const r = Math.min(34, Math.max(24, width * 0.065));
+
+            ctx.save();
+            ctx.translate(moonX, moonY);
+
+            // Soft warm halo
+            const halo = ctx.createRadialGradient(0, 0, r * 0.4, 0, 0, r * 2.5);
+            halo.addColorStop(0, 'rgba(254, 249, 195, 0.42)');
+            halo.addColorStop(1, 'rgba(254, 249, 195, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Golden pastel moon disc
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Crescent shadow cutout on upper-right to keep crescent silhouette while leaving space for cute face
+            ctx.fillStyle = '#2b204d';
+            ctx.beginPath();
+            ctx.arc(r * 0.46, -r * 0.34, r * 0.72, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Closed happy eyes on moon
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 2.1;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(-r * 0.36, r * 0.06, r * 0.13, Math.PI * 1.1, Math.PI * 1.9);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-r * 0.02, r * 0.18, r * 0.13, Math.PI * 1.1, Math.PI * 1.9);
+            ctx.stroke();
+
+            // Rosy moon cheek & tiny smile
+            ctx.fillStyle = 'rgba(251, 113, 133, 0.55)';
+            ctx.beginPath();
+            ctx.ellipse(-r * 0.44, r * 0.22, r * 0.11, r * 0.065, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(-r * 0.22, r * 0.24, r * 0.11, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawMiniHeart(x, y, size, alpha) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#fda4af';
+            const s = size * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, s * 0.35);
+            ctx.bezierCurveTo(-s, -s * 0.4, -s * 1.4, s * 0.5, 0, s * 1.3);
+            ctx.bezierCurveTo(s * 1.4, s * 0.5, s, -s * 0.4, 0, s * 0.35);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawCandyGroundHill() {
+            ctx.save();
+            // Create curved hill path
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            ctx.lineTo(0, height - 38);
+            ctx.quadraticCurveTo(width * 0.5, height - 66, width, height - 38);
+            ctx.lineTo(width, height);
+            ctx.closePath();
+
+            // Base pastel cream fill
+            ctx.fillStyle = '#fff1f5';
+            ctx.fill();
+
+            // Clip inside hill for diagonal candy stripes
+            ctx.clip();
+            ctx.fillStyle = 'rgba(244, 114, 182, 0.34)';
+            const stripeSpacing = 34;
+            for (let sx = -60; sx < width + 80; sx += stripeSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(sx, height);
+                ctx.lineTo(sx + 16, height);
+                ctx.lineTo(sx + 44, height - 70);
+                ctx.lineTo(sx + 28, height - 70);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Soft frosting highlight along top curve of the hill
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, height - 38);
+            ctx.quadraticCurveTo(width * 0.5, height - 66, width, height - 38);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawCloud(x, y, scale, opacity) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = `rgba(255, 235, 245, ${opacity})`;
+            ctx.beginPath();
+            ctx.arc(-28, 8, 22, 0, Math.PI * 2);
+            ctx.arc(0, 0, 30, 0, Math.PI * 2);
+            ctx.arc(30, 6, 24, 0, Math.PI * 2);
+            ctx.arc(52, 14, 16, 0, Math.PI * 2);
+            ctx.arc(-48, 14, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawPenguin() {
+            ctx.save();
+
+            // Little hop when idle + bouncy waddle step when moving
+            const idleHop = Math.abs(Math.sin(penguin.idleHopPhase)) * -5.5 * (1 - penguin.moveSpeedRatio * 0.65);
+            const waddleHop = Math.abs(Math.sin(penguin.waddlePhase)) * -4.5 * penguin.moveSpeedRatio;
+            const squash = Math.sin(penguin.catchSquash * Math.PI);
+            const scaleX = 1 + squash * 0.22;
+            const scaleY = 1 - squash * 0.18;
+
+            ctx.translate(penguin.x, penguin.y + idleHop + waddleHop);
+            ctx.rotate(penguin.tilt);
+            ctx.scale(scaleX, scaleY);
+
+            const w = penguin.width;
+            const h = penguin.height;
+
+            // Magnet Heart aura ring around Penguin when active!
+            if (magnetTimer > 0) {
+                const pulse = 1 + Math.sin(worldTime * 10) * 0.06;
+                ctx.save();
+                ctx.strokeStyle = 'rgba(244, 114, 182, 0.55)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                ctx.arc(0, 0, w * 0.78 * pulse, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Soft shadow underneath Penguin
+            ctx.fillStyle = 'rgba(30, 15, 50, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(0, h * 0.48, w * 0.46, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shuffling tiny orange feet
+            const footShuffle = Math.sin(penguin.waddlePhase) * 4.5 * penguin.moveSpeedRatio;
+            ctx.fillStyle = '#ffb703';
+            ctx.beginPath();
+            ctx.ellipse(-w * 0.18, h * 0.44 + footShuffle, w * 0.14, h * 0.068, -0.1, 0, Math.PI * 2);
+            ctx.ellipse(w * 0.18, h * 0.44 - footShuffle, w * 0.14, h * 0.068, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Bigger, rounder, plumper body
+            ctx.fillStyle = '#242d44';
+            ctx.beginPath();
+            ctx.ellipse(0, h * 0.02, w * 0.46, h * 0.45, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Chubby snowy white belly
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(0, h * 0.07, w * 0.33, h * 0.35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tiny Children's Day Party Hat with Stripes & Pom-Pom on top
+            const hatBaseY = -h * 0.40;
+            const hatTopY = -h * 0.64;
+            ctx.fillStyle = '#ff7096';
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.13, hatBaseY);
+            ctx.lineTo(w * 0.13, hatBaseY);
+            ctx.lineTo(0, hatTopY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Hat stripes
+            ctx.strokeStyle = '#fde047';
+            ctx.lineWidth = 2.8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.08, hatBaseY - (hatBaseY - hatTopY) * 0.35);
+            ctx.lineTo(w * 0.08, hatBaseY - (hatBaseY - hatTopY) * 0.35);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.045, hatBaseY - (hatBaseY - hatTopY) * 0.68);
+            ctx.lineTo(w * 0.045, hatBaseY - (hatBaseY - hatTopY) * 0.68);
+            ctx.stroke();
+
+            // Fluffy Pom-Pom on top of hat
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(0, hatTopY - 2, w * 0.055, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Smaller Cute Pink Bow on the side of Penguin's head
+            ctx.save();
+            ctx.translate(w * 0.25, -h * 0.33);
+            ctx.rotate(0.42);
+            ctx.fillStyle = '#ff477e';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-w * 0.095, -h * 0.05);
+            ctx.lineTo(-w * 0.095, h * 0.05);
+            ctx.closePath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(w * 0.095, -h * 0.05);
+            ctx.lineTo(w * 0.095, h * 0.05);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#ffb3c6';
+            ctx.beginPath();
+            ctx.arc(0, 0, w * 0.032, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // EXPRESSIVE FACES:
+            // 1. Pout when a treat is missed
+            // 2. Happy closed-eyes smile on catch
+            // 3. Excited open mouth on combos / rainbow star
+            // 4. Default big sparkly eyes
+            const eyeY = -h * 0.16;
+            const eyeOffsetX = w * 0.165;
+
+            if (penguin.poutTimer > 0) {
+                // Cute sad/pouty eyes + tiny tilted eyebrows
+                ctx.fillStyle = '#1b2133';
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX, eyeY, w * 0.062, 0, Math.PI * 2);
+                ctx.arc(eyeOffsetX, eyeY, w * 0.062, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glossy teary highlight
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX - 1.5, eyeY - 1.5, w * 0.025, 0, Math.PI * 2);
+                ctx.arc(eyeOffsetX - 1.5, eyeY - 1.5, w * 0.025, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pouty slanted eyebrows
+                ctx.strokeStyle = '#1b2133';
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-eyeOffsetX - w * 0.06, eyeY - h * 0.075);
+                ctx.lineTo(-eyeOffsetX + w * 0.05, eyeY - h * 0.095);
+                ctx.moveTo(eyeOffsetX + w * 0.06, eyeY - h * 0.075);
+                ctx.lineTo(eyeOffsetX - w * 0.05, eyeY - h * 0.095);
+                ctx.stroke();
+            } else if (penguin.happyTimer > 0 && penguin.excitedTimer <= 0) {
+                // Happy closed-eyes smile (^ ^)
+                ctx.strokeStyle = '#1b2133';
+                ctx.lineWidth = 3.2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX, eyeY + 2, w * 0.068, Math.PI * 1.12, Math.PI * 1.88);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(eyeOffsetX, eyeY + 2, w * 0.068, Math.PI * 1.12, Math.PI * 1.88);
+                ctx.stroke();
+            } else {
+                // Bigger Sparkly Eyes!
+                ctx.fillStyle = '#1b2133';
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX, eyeY, w * 0.068, 0, Math.PI * 2);
+                ctx.arc(eyeOffsetX, eyeY, w * 0.068, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Main big eye sparkle
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX + w * 0.022, eyeY - h * 0.022, w * 0.026, 0, Math.PI * 2);
+                ctx.arc(eyeOffsetX + w * 0.022, eyeY - h * 0.022, w * 0.026, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Secondary tiny starlight dot
+                ctx.beginPath();
+                ctx.arc(-eyeOffsetX - w * 0.02, eyeY + h * 0.02, w * 0.013, 0, Math.PI * 2);
+                ctx.arc(eyeOffsetX - w * 0.02, eyeY + h * 0.02, w * 0.013, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Bigger Rosy Blush Cheeks
+            ctx.fillStyle = 'rgba(255, 105, 145, 0.85)';
+            ctx.beginPath();
+            ctx.ellipse(-w * 0.27, -h * 0.075, w * 0.088, h * 0.048, 0, 0, Math.PI * 2);
+            ctx.ellipse(w * 0.27, -h * 0.075, w * 0.088, h * 0.048, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cute Beak / Mouth Expressions
+            if (penguin.excitedTimer > 0) {
+                // Excited open happy mouth on combos!
+                ctx.fillStyle = '#ffb703';
+                ctx.beginPath();
+                ctx.moveTo(-w * 0.085, -h * 0.11);
+                ctx.lineTo(w * 0.085, -h * 0.11);
+                ctx.lineTo(0, -h * 0.045);
+                ctx.closePath();
+                ctx.fill();
+
+                // Open happy mouth underneath beak
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.arc(0, -h * 0.045, w * 0.065, 0, Math.PI);
+                ctx.fill();
+            } else if (penguin.poutTimer > 0) {
+                // Cute beak + tiny pout curve
+                ctx.fillStyle = '#ffb703';
+                ctx.beginPath();
+                ctx.moveTo(-w * 0.075, -h * 0.105);
+                ctx.lineTo(w * 0.075, -h * 0.105);
+                ctx.lineTo(0, -h * 0.035);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#9f1239';
+                ctx.lineWidth = 2.2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.arc(0, -h * 0.005, w * 0.045, Math.PI * 1.15, Math.PI * 1.85);
+                ctx.stroke();
+            } else {
+                // Standard adorable little orange beak
+                ctx.fillStyle = '#ffb703';
+                ctx.beginPath();
+                ctx.moveTo(-w * 0.085, -h * 0.105);
+                ctx.lineTo(w * 0.085, -h * 0.105);
+                ctx.lineTo(0, -h * 0.015);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Woven Pastel Candy Basket held in front
+            const bw = w * 0.86;
+            const bh = h * 0.28;
+            const by = h * 0.10;
+
+            // Render caught mini treats peeking out from inside the top of the basket!
+            if (basketCandies.length > 0) {
+                ctx.font = `${Math.round(h * 0.17)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                for (const bc of basketCandies) {
+                    ctx.save();
+                    ctx.translate(bc.offsetX * bw, by - 4 + bc.offsetY * bh);
+                    ctx.rotate(bc.rot);
+                    ctx.fillText(bc.emoji, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            // Basket body
+            const basketGrad = ctx.createLinearGradient(0, by, 0, by + bh);
+            basketGrad.addColorStop(0, '#fcd34d');
+            basketGrad.addColorStop(1, '#f59e0b');
+            ctx.fillStyle = basketGrad;
+
+            ctx.beginPath();
+            ctx.moveTo(-bw * 0.5, by);
+            ctx.lineTo(bw * 0.5, by);
+            ctx.lineTo(bw * 0.38, by + bh);
+            ctx.quadraticCurveTo(0, by + bh + 6, -bw * 0.38, by + bh);
+            ctx.closePath();
+            ctx.fill();
+
+            // Basket rim
+            ctx.fillStyle = '#fb7185';
+            drawRoundedRect(ctx, -bw * 0.54, by - 5, bw * 1.08, 10, 5);
+            ctx.fill();
+
+            // Cute heart emblem on basket center
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `${Math.round(h * 0.14)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💗', 0, by + bh * 0.55);
+
+            // Chubby flippers holding the basket
+            ctx.fillStyle = '#242d44';
+            ctx.beginPath();
+            ctx.ellipse(-bw * 0.49, by + bh * 0.24, w * 0.095, h * 0.15, 0.35, 0, Math.PI * 2);
+            ctx.ellipse(bw * 0.49, by + bh * 0.24, w * 0.095, h * 0.15, -0.35, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawTreats() {
+            for (const t of treats) {
+                ctx.save();
+                ctx.translate(t.x, t.y);
+
+                // Soft glowing aura behind every falling treat
+                const glowRadius = t.type === 'regular' ? t.size * 0.85 : t.size * 1.05;
+                const glow = ctx.createRadialGradient(0, 0, 3, 0, 0, glowRadius);
+                glow.addColorStop(0, t.glow);
+                glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pulsing magnet ring around rare Magnet Heart 💗
+                if (t.type === 'magnet') {
+                    const ringScale = 1 + Math.sin(worldTime * 9) * 0.14;
+                    ctx.strokeStyle = 'rgba(255, 228, 230, 0.85)';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, t.size * 0.64 * ringScale, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Gentle spin as treats fall
+                ctx.rotate(t.spinAngle);
+
+                ctx.font = `${t.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(t.emoji, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function drawEffects() {
+            // Sparkle bursts
+            for (const p of sparkles) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Floating playful catch words, combos & milestones
+            for (const ft of floatingTexts) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.life);
+
+                let fontSize = 18;
+                let fill = '#ffffff';
+                let shadow = 'rgba(190, 24, 93, 0.8)';
+
+                if (ft.style === 'gold') {
+                    fontSize = 21;
+                    fill = '#fde047';
+                    shadow = 'rgba(180, 83, 9, 0.85)';
+                } else if (ft.style === 'combo') {
+                    fontSize = 22;
+                    fill = '#fbcfe8';
+                    shadow = 'rgba(157, 23, 77, 0.9)';
+                } else if (ft.style === 'milestone') {
+                    fontSize = 28;
+                    fill = '#fef08a';
+                    shadow = 'rgba(190, 24, 93, 0.95)';
+                }
+
+                ctx.font = `bold ${fontSize}px "Fredoka", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = fill;
+                ctx.shadowColor = shadow;
+                ctx.shadowBlur = 10;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            }
+
+            // Confetti bursts & gentle finale confetti rain
+            for (const c of confetti) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, c.life * 1.4));
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rotation);
+                if (c.emoji) {
+                    ctx.font = `${c.size}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(c.emoji, 0, 0);
+                } else {
+                    ctx.fillStyle = c.color;
+                    ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
+                }
+                ctx.restore();
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
+            lastTime = timestamp;
+
+            update(dt);
+
+            ctx.clearRect(0, 0, width, height);
+            drawBackground();
+            drawTreats();
+            drawPenguin();
+            drawEffects();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start animation loop on window load
+        window.onload = function () {
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>
