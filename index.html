@@ -132,7 +132,7 @@
     <canvas id="gameCanvas"></canvas>
 
     <!-- Top Score HUD & Treat Collection (Hidden until game starts) -->
-    <div id="hud" class="hidden fixed top-0 left-0 right-0 z-20 px-3 pt-3 pb-1 pointer-events-none flex flex-col items-center">
+    <div id="hud" class="hidden fixed top-0 left-0 right-0 z-20 px-3 pt-14 pb-1 pointer-events-none flex flex-col items-center">
         <!-- Main Progress Pill -->
         <div class="w-full max-w-md bg-white/22 backdrop-blur-md border border-white/40 rounded-full px-3.5 py-2 shadow-lg flex items-center justify-between gap-2.5">
             <div class="flex items-center gap-1.5 shrink-0">
@@ -140,10 +140,11 @@
                 <span class="font-cute text-white font-semibold text-xs sm:text-sm tracking-wide drop-shadow">
                     Saaanu's Treats
                 </span>
+                <span id="levelBadge" class="bg-white/95 text-purple-600 font-cute font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">Lv 1</span>
             </div>
 
-            <!-- Progress Bar -->
-            <div class="flex-1 h-3.5 bg-indigo-950/45 rounded-full overflow-hidden p-0.5 border border-white/25">
+            <!-- Progress Bar (Levels mode only; hidden in Endless) -->
+            <div id="progressWrap" class="flex-1 h-3.5 bg-indigo-950/45 rounded-full overflow-hidden p-0.5 border border-white/25">
                 <div id="progressBar"
                      class="h-full rounded-full bg-gradient-to-r from-pink-400 via-rose-400 to-amber-300 transition-all duration-300 ease-out"
                      style="width: 0%;">
@@ -152,12 +153,22 @@
 
             <!-- Numeric Counter -->
             <div class="shrink-0 bg-white/95 text-pink-600 font-cute font-bold text-xs sm:text-sm px-2.5 py-0.5 rounded-full shadow-sm">
-                <span id="scoreText">0</span> / 12 🍬
+                <span id="scoreText">0 / 12</span> 🍬
+            </div>
+        </div>
+
+        <!-- Hearts (Endless & Brave mode) + Speed (Endless) -->
+        <div class="mt-1.5 flex items-center justify-center gap-2">
+            <div id="heartsRow" class="hidden bg-indigo-950/35 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 shadow-sm">
+                <span id="heartsText" class="text-sm sm:text-base tracking-wide">❤️❤️❤️</span>
+            </div>
+            <div id="speedPill" class="hidden bg-indigo-950/35 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 shadow-sm">
+                <span class="text-white font-cute font-bold text-xs sm:text-sm">🚀 Speed <span id="speedText">x1.0</span></span>
             </div>
         </div>
 
         <!-- Treat Collection Row (Lights up in full color as each treat type is caught) -->
-        <div id="collectionBar" class="mt-1.5 bg-indigo-950/35 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm">
+        <div id="collectionBar" class="mt-1.5 bg-indigo-950/35 backdrop-blur-md border border-white/25 rounded-full px-3 py-1 flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm">
             <span data-treat="🍫" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍫</span>
             <span data-treat="🍭" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍭</span>
             <span data-treat="🍦" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍦</span>
@@ -166,21 +177,40 @@
             <span data-treat="🍩" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍩</span>
             <span data-treat="🍪" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍪</span>
             <span data-treat="🍓" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍓</span>
+            <span data-treat="🍰" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍰</span>
+            <span data-treat="🍮" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍮</span>
+            <span data-treat="🍡" class="treat-badge text-sm sm:text-base grayscale opacity-40 transition-all duration-300">🍡</span>
         </div>
 
-        <!-- Dynamic Status Pills (Sweet Combo & Magnet Heart Timer) -->
+        <!-- Dynamic Status Pills (Combo, Magnet, Slow-Mo & Double Points Timers) -->
         <div class="mt-1.5 flex flex-wrap items-center justify-center gap-2">
             <div id="comboPill" class="hidden bg-gradient-to-r from-amber-400 to-pink-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50 animate-bounce">
-                ✨ Sweet Combo! x<span id="comboCountText">3</span>
+                <span id="comboLabel">✨ Sweet Combo!</span> x<span id="comboCountText">3</span>
             </div>
             <div id="magnetPill" class="hidden bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50">
                 Magnet! 💗 <span id="magnetTimerText">5.0</span>s
+            </div>
+            <div id="slowmoPill" class="hidden bg-gradient-to-r from-sky-400 to-indigo-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50">
+                Slow-Mo! ❄️ <span id="slowmoTimerText">5.0</span>s
+            </div>
+            <div id="doublePill" class="hidden bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-cute font-bold text-xs px-3 py-0.5 rounded-full shadow-md border border-white/50">
+                Double Points! 🎫 <span id="doubleTimerText">8.0</span>s
             </div>
         </div>
 
         <p id="hintText" class="text-white/90 text-xs sm:text-sm mt-1.5 font-semibold tracking-wide drop-shadow transition-opacity duration-500">
             Slide Penguin left or right to catch treats! ✨
         </p>
+    </div>
+
+    <!-- Top-Right Round Buttons: Music Mute + Pause -->
+    <div class="fixed top-2 right-2 z-30 flex gap-2">
+        <button id="musicBtn"
+                class="w-10 h-10 rounded-full bg-white/25 backdrop-blur-md border border-white/40 text-white text-lg shadow-lg active:scale-90 transition-transform cursor-pointer flex items-center justify-center"
+                aria-label="Toggle music and sound">🔊</button>
+        <button id="pauseBtn"
+                class="hidden w-10 h-10 rounded-full bg-white/25 backdrop-blur-md border border-white/40 text-white text-lg shadow-lg active:scale-90 transition-transform cursor-pointer items-center justify-center"
+                aria-label="Pause game">⏸️</button>
     </div>
 
     <!-- 1. Landing Overlay -->
@@ -249,17 +279,39 @@
                 </span>
             </h1>
 
-            <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6 px-1">
+            <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-4 px-1">
                 Help little <span class="font-bold text-pink-600">Penguin</span> catch <span class="font-bold text-pink-600">12 sweet treats</span> to unlock your special Children's Day surprise!
             </p>
 
-            <button id="startBtn"
-                    class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-lg sm:text-xl tracking-wide shadow-lg active:scale-95 transition-transform animate-btn-glow cursor-pointer">
-                Start Catching ✨
+            <!-- Daily Surprise Card -->
+            <div class="bg-gradient-to-r from-pink-50 to-amber-50 border border-pink-200 rounded-2xl px-4 py-3 mb-4 text-center shadow-inner">
+                <p class="text-pink-600 font-cute font-bold text-xs uppercase tracking-wider mb-1">💌 Today's surprise from Suhail ji</p>
+                <p id="dailyMessage" class="text-slate-700 font-semibold text-sm leading-relaxed">You are my favourite person in the whole world 🐧❤️</p>
+            </div>
+
+            <!-- Mode Select -->
+            <button id="levelsBtn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-lg tracking-wide shadow-lg active:scale-95 transition-transform animate-btn-glow cursor-pointer mb-2.5">
+                🌸 Cozy Levels
+            </button>
+            <button id="endlessBtn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 text-white font-cute font-bold text-lg tracking-wide shadow-lg active:scale-95 transition-transform cursor-pointer mb-3">
+                ♾️ Endless — How Far Can Penguin Go?
             </button>
 
-            <p class="text-xs text-slate-400 mt-4 font-semibold">
-                🔊 Soft chimes included • Drag or move to waddle
+            <!-- Brave Penguin Toggle -->
+            <button id="braveToggle"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs sm:text-sm transition-colors cursor-pointer mb-3">
+                🐧 Cozy Mode — no fail, just fun (tap for Brave Penguin 💪)
+            </button>
+
+            <!-- Saved Stats -->
+            <p id="statsRow" class="text-xs sm:text-sm text-slate-500 font-semibold mb-1">
+                Best Endless: 0 🍬 · Best Level: 0 · Total treats: 0
+            </p>
+
+            <p class="text-xs text-slate-400 mt-2 font-semibold">
+                🔊 Soft chimes &amp; music included • Drag or move to waddle • Avoid the 💣!
             </p>
         </div>
     </div>
@@ -324,10 +376,108 @@
         </div>
     </div>
 
+    <!-- 4. Level Complete Modal -->
+    <div id="levelCompleteModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-indigo-950/35 backdrop-blur-xs overflow-y-auto">
+        <div class="pastel-glass w-full max-w-sm rounded-3xl p-6 sm:p-7 text-center relative my-auto animate-pop-in">
+            <div class="text-5xl mb-2">🎉</div>
+            <h2 id="levelCompleteTitle" class="font-cute text-2xl font-bold text-slate-800 mb-2">
+                Level 1 Complete!
+            </h2>
+            <p id="levelCompleteStats" class="text-slate-600 font-semibold text-sm sm:text-base mb-5">
+                12 treats caught!
+            </p>
+            <button id="nextLevelBtn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-lg tracking-wide shadow-lg active:scale-95 transition-transform cursor-pointer mb-2.5">
+                Next Level →
+            </button>
+            <button id="levelCompleteMenuBtn"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-sm transition-colors cursor-pointer">
+                Back to Menu 🏠
+            </button>
+        </div>
+    </div>
+
+    <!-- 5. Game Over Modal (Endless mode) -->
+    <div id="gameOverModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-indigo-950/35 backdrop-blur-xs overflow-y-auto">
+        <div class="pastel-glass w-full max-w-sm rounded-3xl p-6 sm:p-7 text-center relative my-auto animate-pop-in">
+            <div class="text-5xl mb-2">🐧</div>
+            <h2 class="font-cute text-2xl font-bold text-slate-800 mb-1">
+                Game Over
+            </h2>
+            <p class="text-slate-600 font-semibold text-sm mb-4">So close! The penguin believes in you 💖</p>
+            <div class="bg-white/85 rounded-2xl p-4 border border-pink-100 shadow-inner mb-5">
+                <p class="font-cute text-3xl font-bold text-pink-600"><span id="gameOverScore">0</span> 🍬</p>
+                <p id="gameOverBest" class="text-slate-500 font-bold text-sm mt-1">Best: 0 🍬</p>
+                <p id="newBestBadge" class="hidden font-cute font-bold text-amber-500 text-sm mt-1">✨ New Best! ✨</p>
+            </div>
+            <button id="gameOverAgainBtn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 text-white font-cute font-bold text-lg tracking-wide shadow-lg active:scale-95 transition-transform cursor-pointer mb-2.5">
+                Play Again 🔄
+            </button>
+            <button id="gameOverMenuBtn"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-sm transition-colors cursor-pointer">
+                Back to Menu 🏠
+            </button>
+        </div>
+    </div>
+
+    <!-- 6. Level Failed Modal (Brave mode, 3 misses) -->
+    <div id="levelFailModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-indigo-950/35 backdrop-blur-xs overflow-y-auto">
+        <div class="pastel-glass w-full max-w-sm rounded-3xl p-6 sm:p-7 text-center relative my-auto animate-pop-in">
+            <div class="text-5xl mb-2">💔</div>
+            <h2 class="font-cute text-2xl font-bold text-slate-800 mb-1">
+                So close!
+            </h2>
+            <p id="levelFailText" class="text-slate-600 font-semibold text-sm mb-5">Out of hearts on Level 1 — the penguin is cheering you on! 🐧</p>
+            <button id="retryLevelBtn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-lg tracking-wide shadow-lg active:scale-95 transition-transform cursor-pointer mb-2.5">
+                Retry Level 🔄
+            </button>
+            <button id="levelFailMenuBtn"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-sm transition-colors cursor-pointer">
+                Back to Menu 🏠
+            </button>
+        </div>
+    </div>
+
+    <!-- 7. Pause Overlay -->
+    <div id="pauseOverlay" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-indigo-950/45 backdrop-blur-xs">
+        <div class="pastel-glass w-full max-w-xs rounded-3xl p-6 text-center animate-pop-in">
+            <div class="text-5xl mb-2">⏸️</div>
+            <h2 class="font-cute text-2xl font-bold text-slate-800 mb-5">Paused</h2>
+            <button id="resumeBtn"
+                    class="w-full py-3 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-400 text-white font-cute font-bold text-base tracking-wide shadow-lg active:scale-95 transition-transform cursor-pointer mb-2.5">
+                Resume ▶️
+            </button>
+            <button id="restartBtn"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-sm transition-colors cursor-pointer mb-2.5">
+                Restart 🔄
+            </button>
+            <button id="pauseMenuBtn"
+                    class="w-full py-2.5 px-4 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-600 font-bold text-sm transition-colors cursor-pointer">
+                Back to Menu 🏠
+            </button>
+        </div>
+    </div>
+
+    <!-- 8. Achievement Toast -->
+    <div id="achievementToast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        <div class="bg-gradient-to-r from-amber-400 to-pink-500 text-white font-cute font-bold text-sm px-5 py-2.5 rounded-full shadow-xl border border-white/60 animate-pop-in whitespace-nowrap">
+            <span id="achievementText">🏆 Achievement!</span>
+        </div>
+    </div>
+
     <script>
         /**
-         * Penguin Candy Catcher — Redesigned Cozy Children's Day Mini-Game
+         * Penguin Candy Catcher v3 — Cozy Children's Day Mini-Game, now a proper game
          * Starring Saniya ("Penguin 🐧" / "Saaanu Jii")
+         *
+         * v3 changes: Cozy Levels + Endless modes; dino-style speed ramp in Endless;
+         * 3 hearts in Endless & Brave mode; combo multiplier scoring; a 💣 bomb to dodge;
+         * new treats (🍰🍮🍡) & power-ups (❄️ slow-mo, 🎫 double points, 💝 extra heart);
+         * soft music-box background loop with mute; best score & totals saved;
+         * daily surprise message; achievements; pause menu; screen shake.
+         * The Children's Day letter, voucher wording and sign-off are unchanged.
          */
 
         // ==========================================
@@ -336,14 +486,41 @@
         class SoundFX {
             constructor() {
                 this.ctx = null;
+                this.master = null;
+                this.muted = false;
+                this.musicTimer = null;
+                this.musicNextTime = 0;
+                this.musicNoteIndex = 0;
             }
 
             init() {
                 if (!this.ctx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.ctx = new AudioContext();
+                    this.master = this.ctx.createGain();
+                    this.master.gain.value = this.muted ? 0 : 1;
+                    this.master.connect(this.ctx.destination);
                 }
                 if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            setMuted(m) {
+                this.muted = m;
+                if (this.master) {
+                    this.master.gain.value = m ? 0 : 1;
+                }
+            }
+
+            suspendAll() {
+                if (this.ctx && this.ctx.state === 'running') {
+                    this.ctx.suspend();
+                }
+            }
+
+            resumeAll() {
+                if (this.ctx && this.ctx.state === 'suspended') {
                     this.ctx.resume();
                 }
             }
@@ -365,7 +542,7 @@
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
                 osc.connect(gain);
-                gain.connect(this.ctx.destination);
+                gain.connect(this.master || this.ctx.destination);
 
                 osc.start(now);
                 osc.stop(now + duration + 0.02);
@@ -445,6 +622,77 @@
                 this.playTone(659.25, 'sine', 0.18, 0.07, 0.16);
                 this.playTone(880, 'triangle', 0.35, 0.14, 0.18);
             }
+
+            // Soft low "boing" when a bomb is caught — ouch, but still cute
+            playBomb() {
+                this.init();
+                this.playTone(220, 'sine', 0.22, 0.00, 0.16, 110);
+                this.playTone(147, 'triangle', 0.3, 0.05, 0.13, 98);
+            }
+
+            // Warm little lift when an extra heart is caught
+            playHeart() {
+                this.init();
+                this.playTone(523.25, 'sine', 0.2, 0.00, 0.14);
+                this.playTone(783.99, 'triangle', 0.3, 0.08, 0.14);
+            }
+
+            // Sparkly shimmer for slow-mo & double-points power-ups
+            playPowerup() {
+                this.init();
+                this.playTone(880.00, 'sine', 0.18, 0.00, 0.13);
+                this.playTone(1174.66, 'sine', 0.22, 0.06, 0.13);
+                this.playTone(1567.98, 'triangle', 0.32, 0.12, 0.11);
+            }
+
+            // Bright little fanfare when an achievement unlocks
+            playAchievement() {
+                this.init();
+                this.playTone(659.25, 'triangle', 0.16, 0.00, 0.14);
+                this.playTone(880.00, 'triangle', 0.16, 0.09, 0.14);
+                this.playTone(1046.50, 'triangle', 0.3, 0.18, 0.15);
+            }
+
+            // --- Soft looping music-box melody (one gentle voice, no files) ---
+            startMusic() {
+                this.init();
+                if (this.musicTimer) return;
+                try {
+                    this.musicNextTime = this.ctx.currentTime + 0.1;
+                    this.musicNoteIndex = 0;
+                    this.musicTimer = setInterval(() => this.scheduleMusic(), 240);
+                } catch (e) {
+                    this.musicTimer = null;
+                }
+            }
+
+            stopMusic() {
+                if (this.musicTimer) {
+                    clearInterval(this.musicTimer);
+                    this.musicTimer = null;
+                }
+            }
+
+            scheduleMusic() {
+                if (!this.ctx) return;
+                // Gentle C-major music-box loop: [freq, beats]; 0 = rest. 1 beat = 0.34s.
+                const MELODY = [
+                    [523.25, 1], [659.25, 1], [783.99, 1], [1046.50, 2],
+                    [880.00, 1], [783.99, 1], [659.25, 1], [523.25, 2],
+                    [587.33, 1], [659.25, 1], [783.99, 1], [880.00, 2],
+                    [783.99, 1], [659.25, 1], [587.33, 1], [0, 2]
+                ];
+                const BEAT = 0.34;
+                while (this.musicNextTime < this.ctx.currentTime + 0.7) {
+                    const [freq, beats] = MELODY[this.musicNoteIndex % MELODY.length];
+                    if (freq > 0) {
+                        const offset = Math.max(0, this.musicNextTime - this.ctx.currentTime);
+                        this.playTone(freq, 'triangle', beats * BEAT * 1.8, offset, 0.045);
+                    }
+                    this.musicNextTime += beats * BEAT;
+                    this.musicNoteIndex++;
+                }
+            }
         }
 
         const sfx = new SoundFX();
@@ -455,40 +703,129 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // UI Elements (All existing IDs preserved)
+        // UI Elements (All existing IDs preserved, v3 IDs added)
         const startOverlay = document.getElementById('startOverlay');
-        const startBtn = document.getElementById('startBtn');
+        const levelsBtn = document.getElementById('levelsBtn');
+        const endlessBtn = document.getElementById('endlessBtn');
+        const braveToggle = document.getElementById('braveToggle');
+        const statsRow = document.getElementById('statsRow');
+        const dailyMessageEl = document.getElementById('dailyMessage');
         const hud = document.getElementById('hud');
+        const progressWrap = document.getElementById('progressWrap');
         const progressBar = document.getElementById('progressBar');
         const scoreText = document.getElementById('scoreText');
+        const levelBadge = document.getElementById('levelBadge');
+        const heartsRow = document.getElementById('heartsRow');
+        const heartsText = document.getElementById('heartsText');
+        const speedPill = document.getElementById('speedPill');
+        const speedText = document.getElementById('speedText');
         const hintText = document.getElementById('hintText');
         const comboPill = document.getElementById('comboPill');
+        const comboLabel = document.getElementById('comboLabel');
         const comboCountText = document.getElementById('comboCountText');
         const magnetPill = document.getElementById('magnetPill');
         const magnetTimerText = document.getElementById('magnetTimerText');
+        const slowmoPill = document.getElementById('slowmoPill');
+        const slowmoTimerText = document.getElementById('slowmoTimerText');
+        const doublePill = document.getElementById('doublePill');
+        const doubleTimerText = document.getElementById('doubleTimerText');
+        const musicBtn = document.getElementById('musicBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
         const winModal = document.getElementById('winModal');
         const claimBtn = document.getElementById('claimBtn');
         const redeemedBadge = document.getElementById('redeemedBadge');
         const playAgainBtn = document.getElementById('playAgainBtn');
+        const levelCompleteModal = document.getElementById('levelCompleteModal');
+        const levelCompleteTitle = document.getElementById('levelCompleteTitle');
+        const levelCompleteStats = document.getElementById('levelCompleteStats');
+        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const levelCompleteMenuBtn = document.getElementById('levelCompleteMenuBtn');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const gameOverScore = document.getElementById('gameOverScore');
+        const gameOverBest = document.getElementById('gameOverBest');
+        const newBestBadge = document.getElementById('newBestBadge');
+        const gameOverAgainBtn = document.getElementById('gameOverAgainBtn');
+        const gameOverMenuBtn = document.getElementById('gameOverMenuBtn');
+        const levelFailModal = document.getElementById('levelFailModal');
+        const levelFailText = document.getElementById('levelFailText');
+        const retryLevelBtn = document.getElementById('retryLevelBtn');
+        const levelFailMenuBtn = document.getElementById('levelFailMenuBtn');
+        const pauseOverlay = document.getElementById('pauseOverlay');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const pauseMenuBtn = document.getElementById('pauseMenuBtn');
+        const achievementToast = document.getElementById('achievementToast');
+        const achievementText = document.getElementById('achievementText');
 
-        const TARGET_SCORE = 12;
+        // ---- Saved progress (localStorage, never allowed to break the game) ----
+        const SAVE_KEY = 'penguin-candy-catcher-v3';
+        function defaultSave() {
+            return { bestEndless: 0, bestLevel: 0, totalTreats: 0, voucherClaimed: false, muted: false, achievements: [] };
+        }
+        function loadSave() {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY);
+                if (!raw) return defaultSave();
+                return Object.assign(defaultSave(), JSON.parse(raw));
+            } catch (e) {
+                return defaultSave();
+            }
+        }
+        function writeSave() {
+            try {
+                localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+            } catch (e) {
+                // Storage blocked (private mode) — the game still works, just without saving.
+            }
+        }
+        const save = loadSave();
+
+        // ---- Daily surprise messages (one per day, in Suhail's voice) ----
+        const DAILY_MESSAGES = [
+            'You are my favourite person in the whole world 🐧❤️',
+            'Thinking of you makes even a boring day sweet 🍬',
+            'My Penguin, you make my heart smile every single day 💖',
+            'You are the best part of my day, today and always ✨',
+            'Counting treats with you is my favourite game 🐧🍬',
+            'You are braver and kinder than you know, Saaanu Jii 🌸',
+            'One day we will catch every sweet in the world together 🍭❤️'
+        ];
+
+        const MAX_HEARTS = 3;
+        function levelTargetFor(lv) { return 9 + 3 * lv; } // L1=12, L2=15, L3=18...
 
         let width = window.innerWidth;
         let height = window.innerHeight;
         let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-        let gameState = 'START'; // 'START', 'PLAYING', 'WON'
-        let score = 0;
+        // gameState: 'START', 'PLAYING', 'PAUSED', 'WON', 'LEVEL_COMPLETE', 'GAME_OVER', 'LEVEL_FAIL'
+        let gameState = 'START';
+        let gameMode = 'levels'; // 'levels' or 'endless'
+        let level = 1;
+        let levelTarget = levelTargetFor(1);
+        let hearts = MAX_HEARTS;
+        let braveMode = false;
+        let score = 0; // Levels: treats caught this level. Endless: points.
+        let treatsCaughtRun = 0;
+        let endlessTime = 0;
+        let speedMult = 1;
         let lastTime = 0;
         let spawnTimer = 0;
         let worldTime = 0;
+        let shakeTime = 0;
+        let achievementToastTimer = null;
 
-        // Combo, Milestone, & Magnet Power-up states
+        // Combo, Milestone & Power-up states
         let recentCatchTimestamps = [];
         let comboDisplayTimer = 0;
         let magnetTimer = 0;
+        let slowmoTimer = 0;
+        let doubleTimer = 0;
         let milestone4Shown = false;
         let milestone8Shown = false;
+        let endlessMilestone10 = false;
+        let endlessMilestone25 = false;
+        let endlessMilestone50 = false;
         let unlockedTreats = new Set();
         let basketCandies = []; // Mini visual candies inside Penguin's basket
 
@@ -503,7 +840,8 @@
         let floatingTexts = [];
         let confetti = [];
 
-        // 8 Regular Treats + Rare Rainbow Star (+3) + Rare Magnet Heart Power-Up
+        // 11 Regular Treats + Power-Ups + the 💣 bomb to dodge.
+        // minLevel: only spawns at that level or higher in Levels mode (Endless counts as high level).
         const TREAT_POOL = [
             { emoji: '🍫', type: 'regular', points: 1, pitch: 493.88, glow: 'rgba(244, 114, 182, 0.45)', weight: 15 },
             { emoji: '🍭', type: 'regular', points: 1, pitch: 523.25, glow: 'rgba(251, 113, 133, 0.45)', weight: 15 },
@@ -513,8 +851,15 @@
             { emoji: '🍩', type: 'regular', points: 1, pitch: 659.25, glow: 'rgba(251, 191, 36, 0.45)',  weight: 14 },
             { emoji: '🍪', type: 'regular', points: 1, pitch: 698.46, glow: 'rgba(253, 186, 116, 0.45)', weight: 14 },
             { emoji: '🍓', type: 'regular', points: 1, pitch: 739.99, glow: 'rgba(251, 113, 133, 0.50)', weight: 14 },
+            { emoji: '🍰', type: 'regular', points: 1, pitch: 783.99, glow: 'rgba(244, 114, 182, 0.45)', weight: 13, minLevel: 2 },
+            { emoji: '🍮', type: 'regular', points: 1, pitch: 830.61, glow: 'rgba(253, 224, 71, 0.45)',  weight: 13, minLevel: 2 },
+            { emoji: '🍡', type: 'regular', points: 1, pitch: 880.00, glow: 'rgba(167, 139, 250, 0.45)', weight: 13, minLevel: 2 },
             { emoji: '⭐', type: 'rainbow', points: 3, pitch: 880.00, glow: 'rgba(253, 224, 71, 0.78)',  weight: 5  },
-            { emoji: '💗', type: 'magnet',  points: 1, pitch: 783.99, glow: 'rgba(244, 63, 94, 0.72)',   weight: 6  }
+            { emoji: '💗', type: 'magnet',  points: 1, pitch: 783.99, glow: 'rgba(244, 63, 94, 0.72)',   weight: 6  },
+            { emoji: '❄️', type: 'slowmo',  points: 1, pitch: 1046.50, glow: 'rgba(56, 189, 248, 0.72)', weight: 4  },
+            { emoji: '🎫', type: 'double',  points: 1, pitch: 1174.66, glow: 'rgba(251, 191, 36, 0.72)', weight: 5  },
+            { emoji: '💝', type: 'heart',   points: 1, pitch: 659.25, glow: 'rgba(251, 113, 133, 0.72)', weight: 3  },
+            { emoji: '💣', type: 'bomb',    points: 0, pitch: 220.00, glow: 'rgba(239, 68, 68, 0.55)',  weight: 4, minLevel: 2 }
         ];
 
         const PLAYFUL_WORDS = ['Yummy!', 'Sweet!', 'Nom nom!', 'Penguin power!'];
@@ -652,6 +997,7 @@
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') togglePause();
         });
 
         window.addEventListener('keyup', (e) => {
@@ -681,11 +1027,85 @@
             }
         }
 
-        function startGame() {
-            sfx.init();
-            sfx.playTreatCatch(TREAT_POOL[0]);
+        // ---- Helpers: hearts, HUD, stats, achievements ----
+        function heartsApply() {
+            return gameMode === 'endless' || braveMode;
+        }
 
-            score = 0;
+        function updateHearts() {
+            if (!heartsApply()) {
+                heartsRow.classList.add('hidden');
+                return;
+            }
+            heartsRow.classList.remove('hidden');
+            heartsText.textContent = '❤️'.repeat(Math.max(0, hearts)) + '🖤'.repeat(Math.max(0, MAX_HEARTS - hearts));
+        }
+
+        function updateHUD() {
+            if (gameMode === 'endless') {
+                progressWrap.classList.add('hidden');
+                speedPill.classList.remove('hidden');
+                levelBadge.textContent = '♾️';
+                scoreText.textContent = score;
+                speedText.textContent = 'x' + speedMult.toFixed(1);
+            } else {
+                progressWrap.classList.remove('hidden');
+                speedPill.classList.add('hidden');
+                levelBadge.textContent = 'Lv ' + level;
+                const clamped = Math.min(score, levelTarget);
+                scoreText.textContent = clamped + ' / ' + levelTarget;
+                const pct = (clamped / levelTarget) * 100;
+                progressBar.style.width = pct + '%';
+            }
+            updateHearts();
+        }
+
+        function updateStatsRow() {
+            statsRow.textContent = 'Best Endless: ' + save.bestEndless + ' 🍬 · Best Level: ' + save.bestLevel + ' · Total treats: ' + save.totalTreats;
+        }
+
+        function showDailyMessage() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 0);
+            const dayOfYear = Math.floor((now - start) / 86400000);
+            dailyMessageEl.textContent = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
+        }
+
+        function unlockAchievement(id, text) {
+            if (save.achievements.indexOf(id) !== -1) return;
+            save.achievements.push(id);
+            writeSave();
+            sfx.playAchievement();
+            achievementText.textContent = text;
+            achievementToast.classList.remove('hidden');
+            if (achievementToastTimer) clearTimeout(achievementToastTimer);
+            achievementToastTimer = setTimeout(() => {
+                achievementToast.classList.add('hidden');
+            }, 2800);
+        }
+
+        function checkTreatAchievements() {
+            if (save.totalTreats >= 50) unlockAchievement('treats50', '🏆 50 Treats Caught!');
+            if (save.totalTreats >= 200) unlockAchievement('treats200', '🏆 200 Treats Caught!');
+        }
+
+        function hideAllModals() {
+            winModal.classList.add('hidden');
+            levelCompleteModal.classList.add('hidden');
+            gameOverModal.classList.add('hidden');
+            levelFailModal.classList.add('hidden');
+            pauseOverlay.classList.add('hidden');
+        }
+
+        function hideAllPills() {
+            comboPill.classList.add('hidden');
+            magnetPill.classList.add('hidden');
+            slowmoPill.classList.add('hidden');
+            doublePill.classList.add('hidden');
+        }
+
+        // ---- Starting a run ----
+        function resetRunState() {
             treats = [];
             sparkles = [];
             floatingTexts = [];
@@ -693,8 +1113,14 @@
             recentCatchTimestamps = [];
             comboDisplayTimer = 0;
             magnetTimer = 0;
+            slowmoTimer = 0;
+            doubleTimer = 0;
             milestone4Shown = false;
             milestone8Shown = false;
+            endlessMilestone10 = false;
+            endlessMilestone25 = false;
+            endlessMilestone50 = false;
+            shakeTime = 0;
             spawnTimer = 0.25;
 
             penguin.poutTimer = 0;
@@ -703,18 +1129,13 @@
             penguin.catchSquash = 0;
 
             resetCollectionUI();
-            updateHUD();
-
-            comboPill.classList.add('hidden');
-            magnetPill.classList.add('hidden');
+            hideAllPills();
+            hideAllModals();
             startOverlay.classList.add('hidden');
-            winModal.classList.add('hidden');
             hud.classList.remove('hidden');
+            pauseBtn.classList.remove('hidden');
+            pauseBtn.classList.add('flex');
             hintText.style.opacity = '1';
-
-            // Reset voucher state in case of replay
-            claimBtn.classList.remove('hidden');
-            redeemedBadge.classList.add('hidden');
 
             gameState = 'PLAYING';
 
@@ -725,14 +1146,121 @@
             }, 4200);
         }
 
+        function startLevels() {
+            sfx.init();
+            sfx.startMusic();
+            sfx.playTreatCatch(TREAT_POOL[0]);
+            gameMode = 'levels';
+            level = 1;
+            levelTarget = levelTargetFor(1);
+            hearts = MAX_HEARTS;
+            score = 0;
+            treatsCaughtRun = 0;
+            resetRunState();
+            updateHUD();
+        }
+
+        function startLevel(lv) {
+            sfx.init();
+            sfx.startMusic();
+            gameMode = 'levels';
+            level = lv;
+            levelTarget = levelTargetFor(lv);
+            hearts = MAX_HEARTS;
+            score = 0;
+            resetRunState();
+            updateHUD();
+        }
+
+        function startEndless() {
+            sfx.init();
+            sfx.startMusic();
+            sfx.playTreatCatch(TREAT_POOL[0]);
+            gameMode = 'endless';
+            hearts = MAX_HEARTS;
+            score = 0;
+            treatsCaughtRun = 0;
+            endlessTime = 0;
+            speedMult = 1;
+            resetRunState();
+            updateHUD();
+        }
+
+        function showMenu() {
+            sfx.resumeAll();
+            gameState = 'START';
+            writeSave();
+            treats = [];
+            hideAllModals();
+            hideAllPills();
+            hud.classList.add('hidden');
+            pauseBtn.classList.add('hidden');
+            pauseBtn.classList.remove('flex');
+            startOverlay.classList.remove('hidden');
+            updateStatsRow();
+            showDailyMessage();
+        }
+
+        // ---- Pause ----
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                sfx.suspendAll();
+                pauseOverlay.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                pauseBtn.classList.remove('flex');
+            } else if (gameState === 'PAUSED') {
+                resumeGame();
+            }
+        }
+
+        function resumeGame() {
+            if (gameState !== 'PAUSED') return;
+            gameState = 'PLAYING';
+            sfx.resumeAll();
+            pauseOverlay.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            pauseBtn.classList.add('flex');
+        }
+
+        function restartRun() {
+            sfx.resumeAll();
+            pauseOverlay.classList.add('hidden');
+            if (gameMode === 'endless') {
+                startEndless();
+            } else {
+                startLevel(level);
+            }
+        }
+
+        // ---- Endings ----
         function triggerWin() {
             gameState = 'WON';
             magnetTimer = 0;
-            magnetPill.classList.add('hidden');
-            comboPill.classList.add('hidden');
+            slowmoTimer = 0;
+            doubleTimer = 0;
+            hideAllPills();
+            pauseBtn.classList.add('hidden');
+            pauseBtn.classList.remove('flex');
+
+            // Best level reached
+            if (level > save.bestLevel) {
+                save.bestLevel = level;
+                writeSave();
+            }
 
             sfx.playWinMelody();
             spawnCelebrationBurst(85);
+
+            // If she already claimed the voucher in an earlier session, show the redeemed stamp
+            if (save.voucherClaimed) {
+                claimBtn.classList.add('hidden');
+                redeemedBadge.classList.remove('hidden');
+            } else {
+                claimBtn.classList.remove('hidden');
+                redeemedBadge.classList.add('hidden');
+            }
+            playAgainBtn.textContent = 'Continue to Level 2 →';
 
             setTimeout(() => {
                 hud.classList.add('hidden');
@@ -740,20 +1268,128 @@
             }, 520);
         }
 
-        function updateHUD() {
-            const clamped = Math.min(score, TARGET_SCORE);
-            scoreText.textContent = clamped;
-            const pct = (clamped / TARGET_SCORE) * 100;
-            progressBar.style.width = `${pct}%`;
+        function triggerLevelComplete() {
+            gameState = 'LEVEL_COMPLETE';
+            hideAllPills();
+            pauseBtn.classList.add('hidden');
+            pauseBtn.classList.remove('flex');
+
+            if (level > save.bestLevel) {
+                save.bestLevel = level;
+                writeSave();
+            }
+            if (level >= 3) unlockAchievement('level3', '🏆 Level 3 Reached!');
+
+            sfx.playMilestone();
+            spawnCelebrationBurst(70);
+
+            levelCompleteTitle.textContent = 'Level ' + level + ' Complete!';
+            levelCompleteStats.textContent = levelTarget + ' treats caught! Next: ' + levelTargetFor(level + 1) + ' treats, a little faster 🐧';
+
+            setTimeout(() => {
+                hud.classList.add('hidden');
+                levelCompleteModal.classList.remove('hidden');
+            }, 480);
         }
 
-        startBtn.addEventListener('click', startGame);
-        playAgainBtn.addEventListener('click', startGame);
+        function triggerGameOver() {
+            gameState = 'GAME_OVER';
+            hideAllPills();
+            pauseBtn.classList.add('hidden');
+            pauseBtn.classList.remove('flex');
+
+            const isNewBest = score > save.bestEndless;
+            if (isNewBest) {
+                save.bestEndless = score;
+            }
+            writeSave();
+
+            gameOverScore.textContent = score;
+            gameOverBest.textContent = 'Best: ' + save.bestEndless + ' 🍬';
+            if (isNewBest && score > 0) {
+                newBestBadge.classList.remove('hidden');
+            } else {
+                newBestBadge.classList.add('hidden');
+            }
+
+            setTimeout(() => {
+                hud.classList.add('hidden');
+                gameOverModal.classList.remove('hidden');
+            }, 480);
+        }
+
+        function triggerLevelFail() {
+            gameState = 'LEVEL_FAIL';
+            hideAllPills();
+            pauseBtn.classList.add('hidden');
+            pauseBtn.classList.remove('flex');
+
+            levelFailText.textContent = 'Out of hearts on Level ' + level + ' — the penguin is cheering you on! 🐧';
+
+            setTimeout(() => {
+                hud.classList.add('hidden');
+                levelFailModal.classList.remove('hidden');
+            }, 480);
+        }
+
+        // ---- Losing a heart (Endless & Brave mode) ----
+        function loseHeart(x, y) {
+            if (!heartsApply()) return;
+            hearts = Math.max(0, hearts - 1);
+            shakeTime = 0.35;
+            penguin.poutTimer = 0.9;
+            updateHearts();
+            spawnFloatingText(x, y, '💔', 'combo');
+            if (hearts <= 0) {
+                if (gameMode === 'endless') {
+                    triggerGameOver();
+                } else {
+                    triggerLevelFail();
+                }
+            }
+        }
+
+        // ---- Button wiring ----
+        levelsBtn.addEventListener('click', startLevels);
+        endlessBtn.addEventListener('click', startEndless);
+        playAgainBtn.addEventListener('click', () => startLevel(2));
+        nextLevelBtn.addEventListener('click', () => startLevel(level + 1));
+        retryLevelBtn.addEventListener('click', () => startLevel(level));
+        gameOverAgainBtn.addEventListener('click', startEndless);
+        levelCompleteMenuBtn.addEventListener('click', showMenu);
+        gameOverMenuBtn.addEventListener('click', showMenu);
+        levelFailMenuBtn.addEventListener('click', showMenu);
+        pauseMenuBtn.addEventListener('click', showMenu);
+        pauseBtn.addEventListener('click', togglePause);
+        resumeBtn.addEventListener('click', resumeGame);
+        restartBtn.addEventListener('click', restartRun);
+
+        braveToggle.addEventListener('click', () => {
+            braveMode = !braveMode;
+            if (braveMode) {
+                braveToggle.textContent = '💪 Brave Penguin — 3 misses and the level restarts (tap for Cozy 🐧)';
+                braveToggle.classList.add('bg-rose-100', 'text-rose-600');
+                braveToggle.classList.remove('bg-slate-100', 'text-slate-600');
+            } else {
+                braveToggle.textContent = '🐧 Cozy Mode — no fail, just fun (tap for Brave Penguin 💪)';
+                braveToggle.classList.add('bg-slate-100', 'text-slate-600');
+                braveToggle.classList.remove('bg-rose-100', 'text-rose-600');
+            }
+        });
+
+        musicBtn.addEventListener('click', () => {
+            save.muted = !save.muted;
+            writeSave();
+            sfx.setMuted(save.muted);
+            musicBtn.textContent = save.muted ? '🔇' : '🔊';
+        });
 
         claimBtn.addEventListener('click', () => {
             sfx.playClaim();
             claimBtn.classList.add('hidden');
             redeemedBadge.classList.remove('hidden');
+            save.voucherClaimed = true;
+            writeSave();
             spawnCelebrationBurst(60);
         });
 
@@ -761,10 +1397,19 @@
         // 6. SPAWNING & PARTICLE EFFECTS
         // ==========================================
         function spawnTreat() {
-            const totalWeight = TREAT_POOL.reduce((sum, t) => sum + t.weight, 0);
+            // Context-aware pool: new treats & bombs only from Level 2 (Endless counts as high level);
+            // bombs in Endless only after 10 treats; extra hearts only when a heart is actually missing.
+            const activePool = TREAT_POOL.filter((item) => {
+                if (item.minLevel && gameMode === 'levels' && level < item.minLevel) return false;
+                if (item.type === 'bomb' && gameMode === 'endless' && treatsCaughtRun < 10) return false;
+                if (item.type === 'heart' && (!heartsApply() || hearts >= MAX_HEARTS)) return false;
+                return true;
+            });
+            const pool = activePool.length > 0 ? activePool : TREAT_POOL;
+            const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
             let r = Math.random() * totalWeight;
-            let selected = TREAT_POOL[0];
-            for (const item of TREAT_POOL) {
+            let selected = pool[0];
+            for (const item of pool) {
                 if (r < item.weight) {
                     selected = item;
                     break;
@@ -772,8 +1417,14 @@
                 r -= item.weight;
             }
 
-            // Gentle speed ramp as score rises (still cozy and zero-stress)
-            const rampFactor = 1 + (score / TARGET_SCORE) * 0.24;
+            // Speed: Levels — gentle ramp within the level + a little per level.
+            // Endless — the dino-style multiplier (grows with treats caught + time survived).
+            let rampFactor;
+            if (gameMode === 'endless') {
+                rampFactor = speedMult;
+            } else {
+                rampFactor = (1 + (score / levelTarget) * 0.24) * (1 + (level - 1) * 0.12);
+            }
             const margin = 44;
             const x = margin + Math.random() * (width - margin * 2);
             const baseSpeed = Math.max(175, height * 0.25) * rampFactor;
@@ -816,7 +1467,11 @@
             const palettes = {
                 regular: ['#f9a8d4', '#fde047', '#c4b5fd', '#ffffff'],
                 rainbow: ['#fde047', '#f472b6', '#38bdf8', '#a78bfa', '#34d399', '#ffffff'],
-                magnet:  ['#fb7185', '#f43f5e', '#f9a8d4', '#ffffff']
+                magnet:  ['#fb7185', '#f43f5e', '#f9a8d4', '#ffffff'],
+                slowmo:  ['#7dd3fc', '#38bdf8', '#e0f2fe', '#ffffff'],
+                double:  ['#fde047', '#fbbf24', '#f97316', '#ffffff'],
+                heart:   ['#fda4af', '#fb7185', '#fecdd3', '#ffffff'],
+                bomb:    ['#fca5a5', '#ef4444', '#78716c', '#ffffff']
             };
             const colors = palettes[type] || palettes.regular;
             const count = type === 'regular' ? 13 : 22;
@@ -980,13 +1635,48 @@
                 }
             }
 
+            // Slow-Mo Snowflake timer
+            if (slowmoTimer > 0) {
+                slowmoTimer = Math.max(0, slowmoTimer - dt);
+                slowmoTimerText.textContent = slowmoTimer.toFixed(1);
+                if (slowmoTimer <= 0) {
+                    slowmoPill.classList.add('hidden');
+                }
+            }
+
+            // Double Points timer
+            if (doubleTimer > 0) {
+                doubleTimer = Math.max(0, doubleTimer - dt);
+                doubleTimerText.textContent = doubleTimer.toFixed(1);
+                if (doubleTimer <= 0) {
+                    doublePill.classList.add('hidden');
+                }
+            }
+
+            // Screen shake decay
+            if (shakeTime > 0) {
+                shakeTime = Math.max(0, shakeTime - dt);
+            }
+
             // Gameplay treat spawning & collision
             if (gameState === 'PLAYING') {
+                // Endless: dino-style speed — grows with treats caught AND time survived, capped at 2.5x
+                if (gameMode === 'endless') {
+                    endlessTime += dt;
+                    speedMult = Math.min(2.5, 1 + treatsCaughtRun * 0.02 + Math.floor(endlessTime / 5) * 0.01);
+                    speedText.textContent = 'x' + speedMult.toFixed(1);
+                }
+
                 spawnTimer -= dt;
                 if (spawnTimer <= 0) {
                     spawnTreat();
-                    // Gentle spawn rate ramp as score rises (still super relaxed)
-                    const spawnRamp = 1 - (score / TARGET_SCORE) * 0.22;
+                    // Spawn rate: Levels — gentle ramp within the level. Endless — tightens as speed rises.
+                    let spawnRamp;
+                    if (gameMode === 'endless') {
+                        spawnRamp = Math.max(0.55, 1 - (speedMult - 1) * 0.35);
+                    } else {
+                        spawnRamp = 1 - (score / levelTarget) * 0.22;
+                    }
                     spawnTimer = (0.64 + Math.random() * 0.34) * spawnRamp;
                 }
 
@@ -997,7 +1687,9 @@
 
                 for (let i = treats.length - 1; i >= 0; i--) {
                     const t = treats[i];
-                    t.y += t.vy * dt;
+                    // Slow-Mo: everything falls at 45% speed while the snowflake lasts
+                    const fallDt = slowmoTimer > 0 ? dt * 0.45 : dt;
+                    t.y += t.vy * fallDt;
                     t.wobblePhase += t.wobbleSpeed * dt;
                     t.spinAngle += t.spinSpeed * dt;
                     t.x += Math.sin(t.wobblePhase) * 20 * dt;
@@ -1039,8 +1731,44 @@
                         Math.abs(t.x - penguin.x) < catchRadiusX &&
                         Math.abs(t.y - basketY) < catchRadiusY
                     ) {
+                        // 💣 Bomb: dodge it! Costs a heart where hearts apply, breaks the combo everywhere.
+                        if (t.type === 'bomb') {
+                            recentCatchTimestamps = [];
+                            comboPill.classList.add('hidden');
+                            sfx.playBomb();
+                            spawnCatchParticles(t.x, basketY - 10, 'bomb');
+                            spawnFloatingText(t.x, basketY - 48, 'Ouch! 💣', 'combo');
+                            if (heartsApply()) {
+                                loseHeart(t.x, basketY - 60);
+                            } else {
+                                penguin.poutTimer = 0.9;
+                                shakeTime = 0.25;
+                            }
+                            treats.splice(i, 1);
+                            continue;
+                        }
+
                         const prevScore = score;
-                        score = Math.min(TARGET_SCORE, score + t.points);
+
+                        // Combo: catches within ~2.5 seconds build a streak; the streak sets the multiplier.
+                        const nowSec = performance.now() / 1000;
+                        recentCatchTimestamps.push(nowSec);
+                        recentCatchTimestamps = recentCatchTimestamps.filter(ts => nowSec - ts <= 2.5);
+                        const streak = recentCatchTimestamps.length;
+                        const comboMult = streak >= 8 ? 5 : streak >= 6 ? 4 : streak >= 4 ? 3 : streak >= 2 ? 2 : 1;
+                        const isCombo = streak >= 3;
+
+                        // Points: Endless scores with the multiplier (and double-points if active).
+                        // Levels count treats toward the target — the multiplier is just for fun there.
+                        let gained = t.points;
+                        if (gameMode === 'endless') {
+                            gained = t.points * comboMult * (doubleTimer > 0 ? 2 : 1);
+                            score += gained;
+                        } else {
+                            score = Math.min(levelTarget, score + t.points);
+                        }
+                        treatsCaughtRun++;
+                        save.totalTreats++;
                         updateHUD();
 
                         // Unlock in Treat Collection row & add mini candy to basket visual
@@ -1059,12 +1787,6 @@
                         penguin.happyTimer = 0.65;
                         penguin.poutTimer = 0;
 
-                        // Check Combo (3 treats within ~2.5 seconds)
-                        const nowSec = performance.now() / 1000;
-                        recentCatchTimestamps.push(nowSec);
-                        recentCatchTimestamps = recentCatchTimestamps.filter(ts => nowSec - ts <= 2.5);
-                        const isCombo = recentCatchTimestamps.length >= 3;
-
                         if (t.type === 'magnet') {
                             magnetTimer = 5.0;
                             magnetTimerText.textContent = '5.0';
@@ -1075,50 +1797,118 @@
                         } else if (t.type === 'rainbow') {
                             penguin.excitedTimer = 1.0;
                             sfx.playTreatCatch(t);
-                            spawnFloatingText(t.x, basketY - 48, 'Rainbow Star! +3 ⭐', 'gold');
+                            unlockAchievement('first-rainbow', '🌈 First Rainbow Star!');
+                            spawnFloatingText(t.x, basketY - 48, 'Rainbow Star! +' + gained + ' ⭐', 'gold');
+                        } else if (t.type === 'slowmo') {
+                            slowmoTimer = 5.0;
+                            slowmoTimerText.textContent = '5.0';
+                            slowmoPill.classList.remove('hidden');
+                            penguin.excitedTimer = 0.9;
+                            sfx.playPowerup();
+                            spawnFloatingText(t.x, basketY - 46, 'Slow-Mo! ❄️', 'combo');
+                        } else if (t.type === 'double') {
+                            doubleTimer = 8.0;
+                            doubleTimerText.textContent = '8.0';
+                            doublePill.classList.remove('hidden');
+                            penguin.excitedTimer = 0.9;
+                            sfx.playPowerup();
+                            spawnFloatingText(t.x, basketY - 46, 'Double Points! 🎫', 'gold');
+                        } else if (t.type === 'heart') {
+                            hearts = Math.min(MAX_HEARTS, hearts + 1);
+                            updateHearts();
+                            penguin.excitedTimer = 0.9;
+                            sfx.playHeart();
+                            unlockAchievement('heart-saver', '💝 Extra Heart Saved!');
+                            spawnFloatingText(t.x, basketY - 46, 'Extra Heart! 💝', 'combo');
                         } else if (isCombo) {
                             penguin.excitedTimer = 1.0;
                             comboDisplayTimer = 2.4;
-                            comboCountText.textContent = recentCatchTimestamps.length;
+                            if (gameMode === 'endless') {
+                                comboLabel.textContent = '🔥 Combo';
+                                comboCountText.textContent = comboMult;
+                            } else {
+                                comboLabel.textContent = '✨ Sweet Combo!';
+                                comboCountText.textContent = streak;
+                            }
                             comboPill.classList.remove('hidden');
                             sfx.playCombo();
+                            if (streak >= 5) unlockAchievement('combo5', '🔥 Combo x5!');
                             spawnCatchParticles(t.x, basketY - 12, 'rainbow');
-                            spawnFloatingText(t.x, basketY - 48, 'Sweet Combo! ✨', 'combo');
+                            spawnFloatingText(t.x, basketY - 48, gameMode === 'endless' ? '+' + gained + ' 🔥' : 'Sweet Combo! ✨', 'combo');
                         } else {
                             sfx.playTreatCatch(t);
                             const randomWord = PLAYFUL_WORDS[Math.floor(Math.random() * PLAYFUL_WORDS.length)];
-                            spawnFloatingText(t.x, basketY - 30, `+${t.points} ${randomWord}`, 'normal');
+                            spawnFloatingText(t.x, basketY - 30, '+' + gained + ' ' + randomWord, 'normal');
                         }
 
                         spawnCatchParticles(t.x, basketY - 10, t.type);
+                        checkTreatAchievements();
 
-                        // Check Milestones at 4 ("Yummy!") and 8 ("So sweet!")
-                        if (!milestone4Shown && prevScore < 4 && score >= 4 && score < TARGET_SCORE) {
-                            milestone4Shown = true;
-                            sfx.playMilestone();
-                            spawnCelebrationBurst(32, height * 0.45);
-                            spawnFloatingText(width * 0.5, height * 0.36, 'Yummy! 🎉', 'milestone');
-                        } else if (!milestone8Shown && prevScore < 8 && score >= 8 && score < TARGET_SCORE) {
-                            milestone8Shown = true;
-                            sfx.playMilestone();
-                            spawnCelebrationBurst(36, height * 0.42);
-                            spawnFloatingText(width * 0.5, height * 0.34, 'So sweet! 💖', 'milestone');
+                        // Milestones: Levels L1 at 4 ("Yummy!") and 8 ("So sweet!"); Endless at 10/25/50 treats.
+                        if (gameMode === 'levels' && level === 1) {
+                            if (!milestone4Shown && prevScore < 4 && score >= 4 && score < levelTarget) {
+                                milestone4Shown = true;
+                                sfx.playMilestone();
+                                spawnCelebrationBurst(32, height * 0.45);
+                                spawnFloatingText(width * 0.5, height * 0.36, 'Yummy! 🎉', 'milestone');
+                            } else if (!milestone8Shown && prevScore < 8 && score >= 8 && score < levelTarget) {
+                                milestone8Shown = true;
+                                sfx.playMilestone();
+                                spawnCelebrationBurst(36, height * 0.42);
+                                spawnFloatingText(width * 0.5, height * 0.34, 'So sweet! 💖', 'milestone');
+                            }
+                        } else if (gameMode === 'endless') {
+                            if (!endlessMilestone10 && treatsCaughtRun >= 10) {
+                                endlessMilestone10 = true;
+                                sfx.playMilestone();
+                                spawnFloatingText(width * 0.5, height * 0.36, '10 treats! Sweet! 🍬', 'milestone');
+                            } else if (!endlessMilestone25 && treatsCaughtRun >= 25) {
+                                endlessMilestone25 = true;
+                                sfx.playMilestone();
+                                spawnCelebrationBurst(32, height * 0.45);
+                                spawnFloatingText(width * 0.5, height * 0.36, '25 treats! Amazing! 🎉', 'milestone');
+                            } else if (!endlessMilestone50 && treatsCaughtRun >= 50) {
+                                endlessMilestone50 = true;
+                                sfx.playMilestone();
+                                spawnCelebrationBurst(40, height * 0.42);
+                                spawnFloatingText(width * 0.5, height * 0.36, '50 treats! Penguin Star! ⭐', 'milestone');
+                            }
+                            if (score >= 100) unlockAchievement('endless100', '⭐ 100 Points in Endless!');
                         }
 
                         treats.splice(i, 1);
 
-                        if (score >= TARGET_SCORE) {
-                            triggerWin();
+                        // Level complete? Level 1 ends in the Children's Day surprise; later levels get their own screen.
+                        // (Guard: a bomb or miss in this same frame may already have ended the run.)
+                        if (gameState === 'PLAYING' && gameMode === 'levels' && score >= levelTarget) {
+                            writeSave();
+                            if (level === 1) {
+                                triggerWin();
+                            } else {
+                                triggerLevelComplete();
+                            }
                         }
                         continue;
                     }
 
-                    // Missed treat reaches ground hill: soft plop + star splash + quick cute pout (NO penalty!)
+                    // Missed treat reaches ground hill: soft plop + star splash + quick cute pout.
+                    // Bombs landing are GOOD (no penalty, no combo break). A missed treat breaks
+                    // the combo everywhere, and costs a heart in Endless & Brave mode.
                     if (t.y >= groundY) {
-                        sfx.playPlop();
-                        spawnMissedSplash(t.x, groundY);
-                        penguin.poutTimer = 0.75;
-                        treats.splice(i, 1);
+                        if (t.type === 'bomb') {
+                            spawnMissedSplash(t.x, groundY);
+                            treats.splice(i, 1);
+                        } else {
+                            sfx.playPlop();
+                            spawnMissedSplash(t.x, groundY);
+                            penguin.poutTimer = 0.75;
+                            recentCatchTimestamps = [];
+                            comboPill.classList.add('hidden');
+                            if (heartsApply()) {
+                                loseHeart(t.x, groundY - 50);
+                            }
+                            treats.splice(i, 1);
+                        }
                     }
                 }
             }
@@ -1664,6 +2454,28 @@
                     ctx.stroke();
                 }
 
+                // Warning ring around the 💣 bomb — dodge it!
+                if (t.type === 'bomb') {
+                    const ringScale = 1 + Math.sin(worldTime * 11) * 0.16;
+                    ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([6, 5]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, t.size * 0.66 * ringScale, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Soft pink ring around the 💝 extra heart
+                if (t.type === 'heart') {
+                    const ringScale = 1 + Math.sin(worldTime * 8) * 0.12;
+                    ctx.strokeStyle = 'rgba(253, 164, 175, 0.9)';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, t.size * 0.64 * ringScale, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
                 // Gentle spin as treats fall
                 ctx.rotate(t.spinAngle);
 
@@ -1743,19 +2555,33 @@
             const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
             lastTime = timestamp;
 
-            update(dt);
+            // Paused: freeze the frame (the pause overlay sits on top)
+            if (gameState !== 'PAUSED') {
+                update(dt);
+            }
 
             ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            // Screen shake on heart loss — a quick shudder, then still
+            if (shakeTime > 0) {
+                const mag = 7 * (shakeTime / 0.35);
+                ctx.translate((Math.random() - 0.5) * 2 * mag, (Math.random() - 0.5) * 2 * mag);
+            }
             drawBackground();
             drawTreats();
             drawPenguin();
             drawEffects();
+            ctx.restore();
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Start animation loop on window load
+        // Start animation loop on window load; restore saved prefs & show today's surprise
         window.onload = function () {
+            sfx.setMuted(save.muted);
+            musicBtn.textContent = save.muted ? '🔇' : '🔊';
+            showDailyMessage();
+            updateStatsRow();
             requestAnimationFrame(gameLoop);
         };
     </script>
